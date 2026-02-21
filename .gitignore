@@ -1,0 +1,79 @@
+# --- Python / Django ---
+# Байт-код
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Виртуальное окружение (venv, venv3, .venv)
+venv/
+ENV/
+env/
+.venv/
+
+# IDE настройки (PyCharm, VS Code)
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Django специфичное
+*.log
+local_settings.py
+db.sqlite3
+media/              # ВАЖНО: загруженные пользователями файлы не должны быть в git
+staticfiles/        # Статика, собранная через collectstatic (генерируется автоматически)
+
+# Тесты и покрытие
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# --- Docker & Compose ---
+# Игнорируем собранные образы и временные файлы, но оставляем конфиги (.yml, Dockerfile)
+.docker/
+docker-compose.override.yml # Часто используется для локальной отладки портов/томов
+
+# --- Environment Variables ---
+# Критически важно: секреты, пароли БД, ключи API
+.env
+.env.local
+.env.production
+*.env
+
+# --- Database & Backups ---
+# Локальные дампы БД (если создаются вручную)
+*.sql
+*.dump
+backup/
+
+# --- OS Files ---
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# --- Node Modules (если вдруг фронтенд будет использовать npm для каких-то утилит)
+node_modules/
+
+# --- Specific to File Exchange Project ---
+# Папки для превью и временной обработки файлов (Celery temp)
+tmp/
+temp/
+previews_temp/
+
+# История git (если используется django-simple-history, она в БД, но проверим нет ли экспортов)
+history_export/
