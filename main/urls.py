@@ -1,7 +1,7 @@
 from django.contrib import admin
-from django.urls import path
-from ep_files_app.api.views import *
+from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/', include('ep_files_app.urls')),
 ]
