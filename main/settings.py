@@ -130,3 +130,18 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = app_config.MAX_FILE_SIZE
 # Путь к папке хранения файлов
 MEDIA_ROOT = app_config.STORAGE_PATH
 MEDIA_URL = '/media/'
+
+# --- JWT & REST FRAMEWORK SETTINGS ---
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    )
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': app_config.ACCESS_TOKEN_LIFETIME,
+    'SIGNING_KEY': app_config.JWT_SECRET_KEY,
+    'AUTH_HEADER_TYPES': ('Bearer',),
+}
+
