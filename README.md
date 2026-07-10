@@ -2,7 +2,6 @@
 
 Файлообменник — веб-приложение для загрузки, хранения и обмена файлами.
 
-[![CI](https://github.com/escobar877-ic/ep-files/actions/workflows/ci.yml/badge.svg)](https://github.com/escobar877-ic/ep-files/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 
 ## Стек
@@ -109,14 +108,15 @@ sphinx-build -b html source build/html
 
 ## CI/CD
 
-GitHub Actions запускается автоматически для push и pull request в `master` и `dev`:
+Конфигурация GitLab CI хранится в `.gitlab-ci.yml`. Пайплайн запускается для merge request и ветки `dev`:
 
 | Стадия | Что делает |
 |---|---|
-| `backend` | Запуск pytest с проверкой покрытия |
-| `frontend` | Установка зависимостей, ESLint и production-сборка |
+| `lint` | Проверка кода через pylint (порог 8.0) |
+| `test` | Запуск pytest с проверкой покрытия |
+| `docs` | Сборка Sphinx-документации |
 
-Исходная конфигурация GitLab CI также сохранена в `.gitlab-ci.yml`.
+GitLab Pages обновляется при каждом merge в `master`.
 
 ## Лицензия
 
