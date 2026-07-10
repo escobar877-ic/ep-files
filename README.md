@@ -2,6 +2,9 @@
 
 Файлообменник — веб-приложение для загрузки, хранения и обмена файлами.
 
+[![CI](https://github.com/escobar877-ic/ep-files/actions/workflows/ci.yml/badge.svg)](https://github.com/escobar877-ic/ep-files/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+
 ## Стек
 
 - **Бэкенд:** Django 4.2 + Django REST Framework + JWT-аутентификация
@@ -14,7 +17,7 @@
 ### Через Docker (рекомендуется)
 
 ```bash
-git clone <url-репозитория>
+git clone https://github.com/escobar877-ic/ep-files.git
 cd ep-files
 
 cp .env.example .env
@@ -106,14 +109,17 @@ sphinx-build -b html source build/html
 
 ## CI/CD
 
-Пайплайн запускается автоматически на merge request и ветке `dev`:
+GitHub Actions запускается автоматически для push и pull request в `master` и `dev`:
 
 | Стадия | Что делает |
 |---|---|
-| `lint` | Проверка кода через pylint (порог 8.0) |
-| `test` | Запуск pytest |
-| `docs` | Сборка Sphinx-документации |
+| `backend` | Запуск pytest с проверкой покрытия |
+| `frontend` | Установка зависимостей, ESLint и production-сборка |
 
-GitLab Pages обновляется при каждом merge в `master`.
+Исходная конфигурация GitLab CI также сохранена в `.gitlab-ci.yml`.
+
+## Лицензия
+
+Проект распространяется по лицензии [MIT](./LICENSE).
 
 * [Обоснование архитектурных паттернов (Observer, Strategy, Facade)](./patterns.txt)

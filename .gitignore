@@ -82,3 +82,8 @@ history_export/
 storage/files/
 storage/avatars/
 docs/build
+
+# Local AI/code-indexing tools and scratch files
+.codegraph/
+CLAUDE.md
+tests/1.html
