@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Alert, Avatar, Box, Button, CircularProgress, Collapse, Container, Grid, IconButton, Paper, TextField, Tooltip, Typography } from '@mui/material';
+import { Alert, Avatar, Box, Button, CircularProgress, Collapse, Container, IconButton, Paper, TextField, Tooltip, Typography } from '@mui/material';
 import { Close, DarkMode, DeleteOutline, Description, Download as DownloadIcon, ExpandMore, Folder, Image, LightMode, LockReset, Logout, Movie, MusicNote, PhotoCamera, PictureAsPdf, RestoreFromTrash, Shield, Slideshow, Star, Storage, TableChart, Visibility } from '@mui/icons-material';
 import api from '../api/axios';
 import { useAuth } from '../context/authContextValue';
 import { useThemeMode } from '../themeMode';
 import { getApiErrorMessage } from './file-manager/fileManagerHelpers';
 import TaskStatusItem from '../components/TaskStatusItem';
+import BrandWordmark from '../components/BrandWordmark';
 
 function formatFileSize(bytes) {
   if (!bytes || bytes === 0) return '0 Б';
@@ -16,12 +17,12 @@ function formatFileSize(bytes) {
 }
 
 const fileGroups = [
-  { extensions: ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp', 'svg'], icon: Image, color: '#5eead4', bg: 'rgba(94, 234, 212, 0.12)' },
-  { extensions: ['mp4', 'webm', 'ogv', 'mov', 'm4v', 'mpeg', 'mpg', 'avi'], icon: Movie, color: '#fb923c', bg: 'rgba(251, 146, 60, 0.13)' },
-  { extensions: ['mp3', 'wav', 'ogg', 'oga', 'm4a', 'aac', 'flac'], icon: MusicNote, color: '#a78bfa', bg: 'rgba(167, 139, 250, 0.13)' },
+  { extensions: ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp', 'svg'], icon: Image, color: '#0000f2', bg: 'rgba(0,0,242,0.08)' },
+  { extensions: ['mp4', 'webm', 'ogv', 'mov', 'm4v', 'mpeg', 'mpg', 'avi'], icon: Movie, color: '#0000f2', bg: 'rgba(237,255,69,0.5)' },
+  { extensions: ['mp3', 'wav', 'ogg', 'oga', 'm4a', 'aac', 'flac'], icon: MusicNote, color: '#0000f2', bg: 'rgba(0,0,242,0.08)' },
   { extensions: ['pdf'], icon: PictureAsPdf, color: '#fb7185', bg: 'rgba(251, 113, 133, 0.13)' },
-  { extensions: ['xlsx', 'xls', 'csv'], icon: TableChart, color: '#4ade80', bg: 'rgba(74, 222, 128, 0.13)' },
-  { extensions: ['ppt', 'pptx', 'pptm', 'potx', 'potm', 'ppsx', 'ppsm'], icon: Slideshow, color: '#fbbf24', bg: 'rgba(251, 191, 36, 0.13)' },
+  { extensions: ['xlsx', 'xls', 'csv'], icon: TableChart, color: '#0000f2', bg: 'rgba(237,255,69,0.5)' },
+  { extensions: ['ppt', 'pptx', 'pptm', 'potx', 'potm', 'ppsx', 'ppsm'], icon: Slideshow, color: '#0000f2', bg: 'rgba(0,0,242,0.08)' },
 ];
 
 const panelSx = {
@@ -30,10 +31,7 @@ const panelSx = {
   borderColor: 'divider',
   boxShadow: (theme) => theme.ep.shadow,
   transition: 'border-color 220ms ease, box-shadow 220ms ease, transform 220ms cubic-bezier(0.22, 1, 0.36, 1)',
-  '&:hover': {
-    borderColor: 'primary.main',
-    transform: 'translateY(-2px)',
-  },
+  '&:hover': { borderColor: 'primary.main' },
 };
 
 function getExtension(item) {
@@ -49,8 +47,8 @@ function FavoriteFileIcon({ item, size = 48 }) {
     ? { icon: Folder, color: '#f4b95f', bg: 'rgba(244, 185, 95, 0.13)' }
     : fileGroups.find((fileGroup) => fileGroup.extensions.includes(getExtension(item)));
   const Icon = group?.icon || Description;
-  const bg = group?.bg || 'rgba(68, 215, 182, 0.12)';
-  const color = group?.color || '#44d7b6';
+  const bg = group?.bg || 'rgba(0,0,242,0.08)';
+  const color = group?.color || '#0000f2';
   return (
     <Box sx={{ width: size, height: size, borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, backgroundColor: bg }}>
       <Icon sx={{ fontSize: Math.round(size * 0.7), color }} />
@@ -100,10 +98,10 @@ function ProfileCard({ user, isAdmin, displayName, themeMode, avatarUploading, o
 
 function FilesHeader({ navigate }) {
   return (
-    <Box sx={{ minHeight: 73, backgroundColor: (theme) => theme.ep.header, backdropFilter: 'blur(18px)', borderBottom: '1px solid', borderColor: 'divider', px: { xs: 1.5, sm: 2, md: 3 }, py: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 1000 }}>
-      <Box component="button" type="button" onClick={() => navigate('/')} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: 0, border: 0, background: 'transparent', cursor: 'pointer' }}>
-        <Typography variant="h5" sx={{ fontWeight: 800, color: 'primary.main' }}>ep-files</Typography>
-      </Box>
+    <Box sx={{ minHeight: 76, backgroundColor: '#0000f2', color: '#f8f7f2', borderBottom: '1px solid rgba(248,247,242,0.42)', px: { xs: 1.5, sm: 3 }, display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', position: 'sticky', top: 0, zIndex: 1000 }}>
+      <Button color="inherit" onClick={() => navigate('/file-manager')} startIcon={<Folder />} sx={{ justifySelf: 'start', px: 0 }}>Файлы</Button>
+      <BrandWordmark inverse compact />
+      <Typography variant="overline" sx={{ color: '#f8f7f2', justifySelf: 'end', display: { xs: 'none', sm: 'block' } }}>PROFILE</Typography>
     </Box>
   );
 }
@@ -118,7 +116,7 @@ function StatsCard({ user, stats }) {
       <Typography variant="body2" color="text.secondary">Электронная почта</Typography>
       <Typography variant="body1" sx={{ fontWeight: 500, mb: 3, overflowWrap: 'anywhere' }}>{user?.email || '-'}</Typography>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}><Storage sx={{ color: 'text.secondary' }} /><Typography variant="body2">Занято {formatFileSize(used)} из {formatFileSize(total)}</Typography></Box>
-      <Box sx={{ width: '100%', height: 8, bgcolor: 'rgba(255,255,255,0.08)', borderRadius: 4, overflow: 'hidden' }}><Box sx={{ width: `${percent}%`, height: '100%', bgcolor: percent > 85 ? 'error.main' : 'primary.main' }} /></Box>
+      <Box sx={{ width: '100%', height: 8, bgcolor: 'rgba(0,0,242,0.1)', overflow: 'hidden' }}><Box sx={{ width: `${percent}%`, height: '100%', bgcolor: percent > 85 ? 'error.main' : 'primary.main' }} /></Box>
       <Typography variant="caption" color="text.secondary">{percent}% использовано</Typography>
     </Paper>
   );
@@ -156,7 +154,7 @@ function FavoriteCard({ item, onDownload, onPreview }) {
     if (canPreview(item)) onPreview(item);
   };
   return (
-    <Grid item xs={12} sm={6} lg={4} sx={{ display: 'flex', justifyContent: { xs: 'center', sm: 'stretch' } }}>
+    <Box sx={{ display: 'flex', minWidth: 0 }}>
       <Paper
         elevation={0}
         onClick={openPreview}
@@ -207,7 +205,7 @@ function FavoriteCard({ item, onDownload, onPreview }) {
           </Tooltip>
         </Box>
       </Paper>
-    </Grid>
+    </Box>
   );
 }
 
@@ -226,7 +224,7 @@ function FavoritesSection({ favorites, onDownload, onPreview }) {
         </Box>
       </Box>
       {favorites.length === 0 ? <Paper elevation={0} sx={{ ...panelSx, p: 4, textAlign: 'center', borderRadius: '12px' }}><Typography color="text.secondary">У вас пока нет избранных файлов.</Typography></Paper> : (
-        <Grid container spacing={2} justifyContent={{ xs: 'center', sm: 'flex-start' }}>{favorites.map((item) => <FavoriteCard key={`${item.type}-${item.id}`} item={item} onDownload={onDownload} onPreview={onPreview} />)}</Grid>
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))', lg: 'repeat(3, minmax(0, 1fr))' }, gap: 2 }}>{favorites.map((item) => <FavoriteCard key={`${item.type}-${item.id}`} item={item} onDownload={onDownload} onPreview={onPreview} />)}</Box>
       )}
     </Box>
   );
@@ -337,13 +335,13 @@ export default function Files({ onPreviewFile }) {
     }
   };
   return (
-    <Box className="ep-page" sx={{ minHeight: '100vh', background: (theme) => theme.ep.pageGradient }}>
+    <Box className="ep-page" sx={{ minHeight: '100vh', backgroundColor: '#0000f2' }}>
       <FilesHeader navigate={navigate} />
-      <Container className="ep-stagger" maxWidth="lg" sx={{ py: { xs: 3, md: 6 }, px: { xs: 2, sm: 3 }, position: 'relative' }}>
+      <Container className="ep-stagger" maxWidth="xl" sx={{ minHeight: 'calc(100vh - 76px)', py: { xs: 3, md: 5 }, px: { xs: 2, sm: 3 }, position: 'relative', backgroundColor: 'background.default', borderLeft: '1px solid', borderRight: '1px solid', borderColor: 'divider' }}>
         {error && <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError('')}>{error}</Alert>}
-        <Grid container spacing={{ xs: 2.5, md: 4 }} justifyContent={{ xs: 'center', md: 'flex-start' }}>
-          <Grid item xs={12} md={5} sx={{ maxWidth: { xs: '360px !important', md: 'none' } }}><ProfileCard user={user} isAdmin={isAdmin} displayName={user?.name || user?.email || 'Пользователь'} themeMode={mode} avatarUploading={avatarUploading} onAvatarChange={handleAvatarChange} onAvatarDelete={handleAvatarDelete} onThemeToggle={toggleMode} onFiles={() => navigate('/file-manager')} onTrash={() => navigate('/trash')} onAdmin={() => navigate('/admin')} onLogout={handleLogout} /></Grid>
-          <Grid item xs={12} md={7} sx={{ maxWidth: { xs: '360px !important', md: 'none' } }}>
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: 'minmax(280px, 0.72fr) minmax(0, 1.55fr)' }, gap: { xs: 2.5, md: 4 }, alignItems: 'start' }}>
+          <Box><ProfileCard user={user} isAdmin={isAdmin} displayName={user?.name || user?.email || 'Пользователь'} themeMode={mode} avatarUploading={avatarUploading} onAvatarChange={handleAvatarChange} onAvatarDelete={handleAvatarDelete} onThemeToggle={toggleMode} onFiles={() => navigate('/file-manager')} onTrash={() => navigate('/trash')} onAdmin={() => navigate('/admin')} onLogout={handleLogout} /></Box>
+          <Box>
             <Box sx={{ display: 'grid', gap: 3 }}>
               <StatsCard user={user} stats={storageStats} />
               <ChangePasswordCard
@@ -356,8 +354,8 @@ export default function Files({ onPreviewFile }) {
                 onToggle={() => setPasswordOpen((prev) => !prev)}
               />
             </Box>
-          </Grid>
-        </Grid>
+          </Box>
+        </Box>
         <FavoritesSection favorites={favorites} onDownload={handleDownloadFav} onPreview={onPreviewFile} />
         <TaskWidget tasks={tasks} clearTasks={() => setTasks([])} />
       </Container>

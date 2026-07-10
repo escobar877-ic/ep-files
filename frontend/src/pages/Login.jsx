@@ -4,7 +4,8 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useAuth } from '../context/authContextValue';
 import { useNavigate, Link } from 'react-router-dom';
-import { Alert, Box, Button, Container, Paper, TextField, Typography } from '@mui/material';
+import { Alert, Box, Button, TextField, Typography } from '@mui/material';
+import AuthShell from '../components/AuthShell';
 
 const schema = yup.object({
   email: yup
@@ -30,7 +31,7 @@ function LoginForm({ register, errors, isSubmitting, onSubmit, handleSubmit, err
       {notice && <Alert severity="success" sx={{ mt: 2 }}>{notice}</Alert>}
       {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
       <Button fullWidth type="submit" variant="contained" size="large" disabled={isSubmitting} sx={{ mt: 3, mb: 2 }}>{isSubmitting ? 'Вход...' : 'Войти'}</Button>
-      <Typography align="center" color="text.secondary">Нет аккаунта? <Link to="/register" style={{ textDecoration: 'none' }}>Зарегистрироваться</Link></Typography>
+      <Typography align="center" color="text.secondary">Нет аккаунта? <Link to="/register" style={{ color: '#0000f2' }}>Зарегистрироваться</Link></Typography>
     </Box>
   );
 }
@@ -75,11 +76,8 @@ export default function Login() {
   };
 
   return (
-    <Container className="ep-page" maxWidth="sm">
-      <Paper className="ep-scale-in" sx={{ p: 4, mt: 8, border: '1px solid', borderColor: 'divider', boxShadow: (theme) => theme.ep.shadow }}>
-        <Typography variant="h4" component="h1" gutterBottom align="center">Вход</Typography>
-        <LoginForm register={register} errors={errors} isSubmitting={isSubmitting} onSubmit={onSubmit} handleSubmit={handleSubmit} error={error} notice={notice} />
-      </Paper>
-    </Container>
+    <AuthShell eyebrow="EP FILES • AUTHORIZATION" title={<>ВЕРНИТЕСЬ<br />К СВОИМ<br />ФАЙЛАМ</>} subtitle="Сессия защищена JWT-токенами в httpOnly cookies. После входа вы сразу попадете в личный кабинет.">
+      <LoginForm register={register} errors={errors} isSubmitting={isSubmitting} onSubmit={onSubmit} handleSubmit={handleSubmit} error={error} notice={notice} />
+    </AuthShell>
   );
 }

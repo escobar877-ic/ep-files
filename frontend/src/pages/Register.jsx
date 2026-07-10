@@ -4,7 +4,8 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useAuth } from '../context/authContextValue';
 import { useNavigate, Link } from 'react-router-dom';
-import { Alert, Box, Button, Container, Paper, TextField, Typography } from '@mui/material';
+import { Alert, Box, Button, TextField, Typography } from '@mui/material';
+import AuthShell from '../components/AuthShell';
 const schema = yup.object({
   name: yup
     .string()
@@ -45,7 +46,7 @@ function RegisterForm({ register, errors, isSubmitting, onSubmit, handleSubmit, 
       <TextField fullWidth label="Пароль" type="password" margin="normal" autoComplete="new-password" {...register('password')} error={!!errors.password} helperText={errors.password?.message} />
       <TextField fullWidth label="Подтвердите пароль" type="password" margin="normal" autoComplete="new-password" {...register('confirmPassword')} error={!!errors.confirmPassword} helperText={errors.confirmPassword?.message} />
       <Button fullWidth type="submit" variant="contained" size="large" disabled={isSubmitting} sx={{ mt: 3, mb: 2 }}>{isSubmitting ? 'Регистрация...' : 'Зарегистрироваться'}</Button>
-      <Typography align="center" color="text.secondary">Уже есть аккаунт? <Link to="/login" style={{ textDecoration: 'none' }}>Войти</Link></Typography>
+      <Typography align="center" color="text.secondary">Уже есть аккаунт? <Link to="/login" style={{ color: '#0000f2' }}>Войти</Link></Typography>
     </Box>
   );
 }
@@ -74,11 +75,8 @@ export default function Register() {
   };
 
   return (
-    <Container className="ep-page" maxWidth="sm">
-      <Paper className="ep-scale-in" sx={{ p: 4, mt: 8, border: '1px solid', borderColor: 'divider', boxShadow: (theme) => theme.ep.shadow }}>
-        <Typography variant="h4" component="h1" gutterBottom align="center">Регистрация</Typography>
-        <RegisterForm register={register} errors={errors} isSubmitting={isSubmitting} onSubmit={onSubmit} handleSubmit={handleSubmit} error={error} />
-      </Paper>
-    </Container>
+    <AuthShell eyebrow="EP FILES • NEW ACCOUNT" title={<>СОЗДАЙТЕ<br />СВОЙ<br />АРХИВ</>} subtitle="100 МБ личного пространства, папки, избранное, история действий и управляемые публичные ссылки.">
+      <RegisterForm register={register} errors={errors} isSubmitting={isSubmitting} onSubmit={onSubmit} handleSubmit={handleSubmit} error={error} />
+    </AuthShell>
   );
 }

@@ -34,6 +34,7 @@ import {
 import { alpha } from '@mui/material/styles';
 import api from '../api/axios';
 import HeaderProfileButton from '../components/HeaderProfileButton';
+import BrandWordmark from '../components/BrandWordmark';
 import { useAuth } from '../context/authContextValue';
 
 function formatFileSize(bytes) {
@@ -82,25 +83,24 @@ function TrashHeader({ user, navigate }) {
   };
 
   return (
-    <Box sx={{ backgroundColor: (theme) => theme.ep.header, backdropFilter: 'blur(18px)', borderBottom: '1px solid', borderColor: 'divider', px: { xs: 1.5, sm: 3 }, py: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 1000 }}>
-      <Box component="button" type="button" onClick={() => navigate('/')} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: 0, border: 0, background: 'transparent', cursor: 'pointer' }}>
-        <Typography variant="h5" sx={{ fontWeight: 800, color: 'primary.main', fontSize: '1.5rem' }}>ep-files</Typography>
-      </Box>
-      <HeaderProfileButton user={user} onClick={() => navigate('/files')} sx={headerButtonSx} />
+    <Box sx={{ minHeight: 76, backgroundColor: '#0000f2', color: '#f8f7f2', borderBottom: '1px solid rgba(248,247,242,0.42)', px: { xs: 1.5, sm: 3 }, display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', position: 'sticky', top: 0, zIndex: 1000 }}>
+      <Button color="inherit" onClick={() => navigate('/file-manager')} startIcon={<ArrowBack />} sx={{ justifySelf: 'start', px: 0 }}>Файлы</Button>
+      <BrandWordmark inverse compact />
+      <HeaderProfileButton user={user} onClick={() => navigate('/files')} sx={{ ...headerButtonSx, justifySelf: 'end', color: '#f8f7f2', borderColor: 'rgba(248,247,242,0.55)', minWidth: { xs: 42, sm: 170 } }} />
     </Box>
   );
 }
 
 function TrashHero({ currentFolder, itemsCount, totalSize, busyId, onClear }) {
   return (
-    <Paper elevation={0} sx={{ ...panelSx, p: { xs: 2.25, md: 4 }, borderRadius: '12px', overflow: 'hidden', position: 'relative' }}>
+    <Paper elevation={0} sx={{ ...panelSx, p: { xs: 2.25, md: 4 }, overflow: 'hidden', position: 'relative' }}>
       <Box sx={{ display: 'flex', alignItems: { xs: 'stretch', md: 'center' }, justifyContent: 'space-between', gap: { xs: 2, md: 3 }, flexDirection: { xs: 'column', md: 'row' }, position: 'relative', zIndex: 1 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, minWidth: 0 }}>
-          <Box sx={{ width: { xs: 52, sm: 64 }, height: { xs: 52, sm: 64 }, borderRadius: '8px', background: 'linear-gradient(135deg, rgba(68, 215, 182, 0.2), rgba(244, 185, 95, 0.18))', border: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <Box sx={{ width: { xs: 52, sm: 64 }, height: { xs: 52, sm: 64 }, backgroundColor: 'rgba(0,0,242,0.08)', border: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <RestoreFromTrash sx={{ fontSize: { xs: 30, sm: 36 }, color: 'primary.main' }} />
           </Box>
           <Box sx={{ minWidth: 0 }}>
-            <Typography variant="h4" sx={{ fontWeight: 900, color: 'text.primary', letterSpacing: 0, lineHeight: 1.15, fontSize: { xs: '1.6rem', sm: '2.125rem' }, overflowWrap: 'anywhere' }}>
+            <Typography className="ep-display" sx={{ color: 'text.primary', lineHeight: 0.9, fontSize: { xs: '2.4rem', sm: '4rem' }, overflowWrap: 'anywhere' }}>
               {currentFolder ? currentFolder.name : 'Корзина файлов'}
             </Typography>
             <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.75 }}>
@@ -380,9 +380,9 @@ export default function Trash() {
   };
 
   return (
-    <Box className="ep-page" sx={{ minHeight: '100vh', background: (theme) => theme.ep.pageGradient }}>
+    <Box className="ep-page" sx={{ minHeight: '100vh', backgroundColor: '#0000f2' }}>
       <TrashHeader user={user} navigate={navigate} />
-      <Container className="ep-stagger" maxWidth="lg" sx={{ py: { xs: 3, md: 4 }, px: { xs: 2, sm: 3 }, display: 'grid', gap: { xs: 2, md: 3 } }}>
+      <Container className="ep-stagger" maxWidth="xl" sx={{ minHeight: 'calc(100vh - 76px)', py: { xs: 3, md: 4 }, px: { xs: 2, sm: 3 }, display: 'grid', alignContent: 'start', gap: { xs: 2, md: 3 }, backgroundColor: 'background.default', borderLeft: '1px solid', borderRight: '1px solid', borderColor: 'divider' }}>
         <TrashHero currentFolder={currentFolder} itemsCount={items.length} totalSize={totalSize} busyId={busyId} onClear={() => setClearDialogOpen(true)} />
         <TrashToolbar currentFolder={currentFolder} navigate={navigate} onBack={goBack} onRoot={goToRoot} />
 

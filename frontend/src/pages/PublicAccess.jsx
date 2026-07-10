@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { Alert, Box, Button, CircularProgress, Container, Dialog, DialogActions, DialogContent, DialogTitle, List, ListItem, ListItemText, Paper, TextField, Typography } from '@mui/material';
 import { AccountCircle, Download, Folder, InsertDriveFile, ReportProblem } from '@mui/icons-material';
 import api from '../api/axios';
+import BrandWordmark from '../components/BrandWordmark';
 
 const previewGroups = {
   image: ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp', 'svg'],
@@ -133,9 +134,9 @@ function PublicFilePage({ token }) {
       {file && (
         <>
           {reportStatus && <Alert severity={reportStatus.includes('Не удалось') ? 'error' : 'success'} sx={{ mb: 2 }} onClose={() => setReportStatus('')}>{reportStatus}</Alert>}
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, alignItems: 'center', mb: 2 }}>
-            <Typography color="text.secondary">{formatFileSize(file.size)}</Typography>
-            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, alignItems: { xs: 'stretch', sm: 'center' }, flexDirection: { xs: 'column', sm: 'row' }, mb: 2 }}>
+            <Typography color="text.secondary" sx={{ whiteSpace: 'nowrap' }}>{formatFileSize(file.size)}</Typography>
+            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', justifyContent: { xs: 'stretch', sm: 'flex-end' }, '& .MuiButton-root': { flex: { xs: '1 1 auto', sm: '0 0 auto' } } }}>
               <Button variant="outlined" color="warning" startIcon={<ReportProblem />} onClick={() => setReportOpen(true)}>Пожаловаться</Button>
               <Button variant="contained" startIcon={<Download />} onClick={download}>Скачать</Button>
             </Box>
@@ -209,13 +210,14 @@ function PublicFolderPage({ token }) {
 
 function PublicShell({ title, ownerEmail, error, children }) {
   return (
-    <Box className="ep-page" sx={{ minHeight: '100vh', background: (theme) => theme.ep.pageGradient, color: 'text.primary', py: 5 }}>
-      <Container maxWidth="md">
+    <Box className="ep-page" sx={{ minHeight: '100vh', backgroundColor: '#0000f2', color: 'text.primary' }}>
+      <Box sx={{ minHeight: 76, display: 'grid', placeItems: 'center', borderBottom: '1px solid rgba(248,247,242,0.42)' }}><BrandWordmark inverse compact /></Box>
+      <Container maxWidth="lg" sx={{ py: { xs: 2, md: 5 }, minHeight: 'calc(100vh - 76px)', backgroundColor: 'background.default', borderLeft: '1px solid', borderRight: '1px solid', borderColor: 'divider' }}>
         <Paper className="ep-scale-in" elevation={0} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 2, border: '1px solid', borderColor: 'divider', backgroundColor: (theme) => theme.ep.panel, boxShadow: (theme) => theme.ep.shadow }}>
           <Box sx={{ display: 'flex', alignItems: { xs: 'stretch', sm: 'flex-start' }, justifyContent: 'space-between', flexDirection: { xs: 'column', sm: 'row' }, gap: 2, mb: 3 }}>
             <Box sx={{ minWidth: 0 }}>
               <Typography variant="overline" color="text.secondary">EP Files</Typography>
-              <Typography variant="h4" sx={{ fontWeight: 800, overflowWrap: 'anywhere' }}>{title}</Typography>
+              <Typography className="ep-display" sx={{ fontSize: { xs: '2.5rem', md: '4rem' }, lineHeight: 0.9, overflowWrap: 'anywhere' }}>{title}</Typography>
               {ownerEmail && <Typography variant="body2" color="text.secondary" sx={{ mt: 0.75, overflowWrap: 'anywhere' }}>Поделился: {ownerEmail}</Typography>}
             </Box>
             <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', justifyContent: { xs: 'flex-start', sm: 'flex-end' }, flexShrink: 0 }}>

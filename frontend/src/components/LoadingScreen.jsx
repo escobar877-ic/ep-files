@@ -9,7 +9,7 @@ export default function LoadingScreen({ label = 'Загрузка' }) {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: (theme) => theme.ep.pageGradient,
+        backgroundColor: '#0000f2',
       }}
     >
       <Box
@@ -17,11 +17,9 @@ export default function LoadingScreen({ label = 'Загрузка' }) {
         sx={{
           width: 128,
           height: 128,
-          borderRadius: '24px',
           border: '1px solid',
-          borderColor: 'divider',
-          backgroundColor: (theme) => theme.ep.panel,
-          boxShadow: (theme) => theme.ep.shadow,
+          borderColor: 'rgba(248,247,242,0.55)',
+          backgroundColor: '#0000f2',
           display: 'grid',
           placeItems: 'center',
           position: 'relative',
@@ -31,15 +29,15 @@ export default function LoadingScreen({ label = 'Загрузка' }) {
         <CircularProgress
           size={86}
           thickness={2.4}
-          sx={{ color: 'primary.main', position: 'absolute' }}
+          sx={{ color: '#f8f7f2', position: 'absolute' }}
         />
-        <Folder sx={{ fontSize: 42, color: 'secondary.main', animation: 'epSoftPulse 2.4s ease-in-out infinite' }} />
+        <Folder sx={{ fontSize: 42, color: '#edff45', animation: 'epSoftPulse 2.4s ease-in-out infinite' }} />
         <Typography
           variant="caption"
           sx={{
             position: 'absolute',
             bottom: -30,
-            color: 'text.secondary',
+            color: '#f8f7f2',
             fontWeight: 700,
           }}
         >

@@ -1,3 +1,59 @@
+@font-face {
+  font-family: 'Bodoni Moda';
+  src: url('/fonts/bodoni-400.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Bodoni Moda';
+  src: url('/fonts/bodoni-600.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'IBM Plex Mono';
+  src: url('/fonts/plex-mono-400.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'IBM Plex Mono';
+  src: url('/fonts/plex-mono-500.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'IBM Plex Mono';
+  src: url('/fonts/plex-mono-600.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'IBM Plex Mono';
+  src: url('/fonts/plex-mono-700.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+
+:root {
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  --ep-blue: #0000f2;
+  --ep-paper: #f4f2ec;
+  --ep-acid: #edff45;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -5,8 +61,9 @@
 }
 
 body {
-  font-family: 'Google Sans', 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: 'IBM Plex Mono', 'SFMono-Regular', Consolas, monospace;
   line-height: 1.5;
+  overflow-x: hidden;
 }
 
 #root {
@@ -18,8 +75,8 @@ html {
 }
 
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
 }
 
 ::-webkit-scrollbar-track {
@@ -31,18 +88,68 @@ html {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #323b46;
-  border-radius: 4px;
+  background: var(--ep-paper);
+  border-radius: 0;
+  border: 1px solid var(--ep-blue);
 }
 
 :root[data-theme='light'] ::-webkit-scrollbar-thumb {
-  background: #c7d0dc;
+  background: var(--ep-blue);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #4b5968;
+  background: var(--ep-acid);
 }
 
 :root[data-theme='light'] ::-webkit-scrollbar-thumb:hover {
-  background: #9aa8ba;
+  background: #0000b8;
+}
+
+.ep-atlas-image {
+  filter: grayscale(1) contrast(1.75) brightness(1.55);
+  mix-blend-mode: screen;
+}
+
+.ep-display {
+  font-family: 'Bodoni Moda', 'Bodoni 72', Didot, 'Times New Roman', serif !important;
+  font-weight: 400 !important;
+  letter-spacing: 0 !important;
+}
+
+.ep-kicker {
+  font-family: 'IBM Plex Mono', 'SFMono-Regular', Consolas, monospace !important;
+  letter-spacing: 0 !important;
+}
+
+.ep-atlas-frame {
+  isolation: isolate;
+}
+
+.ep-atlas-frame::after {
+  content: '';
+  position: absolute;
+  inset: 8% 3% 2% 12%;
+  border: 1px solid rgba(248, 247, 242, 0.55);
+  pointer-events: none;
+  z-index: -1;
+  transform: translate(18px, 18px);
+}
+
+.ep-art-ring {
+  position: absolute;
+  border: 1px solid rgba(248, 247, 242, 0.6);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.ep-feature-image {
+  filter: grayscale(1) contrast(1.8) sepia(0.1);
+  mix-blend-mode: multiply;
+}
+
+@media (max-width: 700px) {
+  .ep-atlas-frame::after {
+    inset: 6% 0 0 8%;
+    transform: translate(10px, 10px);
+  }
 }

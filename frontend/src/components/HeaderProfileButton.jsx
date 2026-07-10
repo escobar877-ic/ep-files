@@ -13,8 +13,8 @@ export default function HeaderProfileButton({ user, sx, ...props }) {
         height: 40,
         whiteSpace: 'nowrap',
         px: { xs: 0.75, sm: 1.5 },
-        backgroundColor: 'rgba(68, 215, 182, 0.08)',
-        '&:hover': { backgroundColor: 'rgba(68, 215, 182, 0.14)' },
+        backgroundColor: 'transparent',
+        '&:hover': { backgroundColor: 'rgba(0, 0, 242, 0.08)' },
         ...sx,
       }}
       {...props}
@@ -28,7 +28,7 @@ export default function HeaderProfileButton({ user, sx, ...props }) {
             bgcolor: 'primary.main',
             color: 'primary.contrastText',
             border: '1px solid',
-            borderColor: 'background.paper',
+            borderColor: 'currentColor',
             fontSize: '0.72rem',
             fontWeight: 800,
             flexShrink: 0,

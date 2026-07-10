@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Box, Grid, IconButton, Paper, Tooltip, Typography } from '@mui/material';
+import { Box, IconButton, Paper, Tooltip, Typography } from '@mui/material';
 import {
   Description,
   Download as DownloadIcon,
@@ -18,12 +18,12 @@ import FileRow from './FileRow';
 import { getDraggedManagerItem, hasDraggedManagerItem, hasDraggedSystemFiles, setDraggedManagerItem } from './dragDrop';
 
 const fileGroups = [
-  { extensions: ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp', 'svg'], icon: Image, color: '#5eead4', bg: 'rgba(94, 234, 212, 0.12)' },
-  { extensions: ['mp4', 'webm', 'ogv', 'mov', 'm4v', 'mpeg', 'mpg', 'avi'], icon: Movie, color: '#fb923c', bg: 'rgba(251, 146, 60, 0.13)' },
-  { extensions: ['mp3', 'wav', 'ogg', 'oga', 'm4a', 'aac', 'flac'], icon: MusicNote, color: '#a78bfa', bg: 'rgba(167, 139, 250, 0.13)' },
-  { extensions: ['pdf'], icon: PictureAsPdf, color: '#fb7185', bg: 'rgba(251, 113, 133, 0.13)' },
-  { extensions: ['xlsx', 'xls', 'csv'], icon: TableChart, color: '#4ade80', bg: 'rgba(74, 222, 128, 0.13)' },
-  { extensions: ['ppt', 'pptx', 'pptm', 'potx', 'potm', 'ppsx', 'ppsm'], icon: Slideshow, color: '#fbbf24', bg: 'rgba(251, 191, 36, 0.13)' },
+  { extensions: ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp', 'svg'], icon: Image, color: '#0000f2', bg: 'rgba(0, 0, 242, 0.08)' },
+  { extensions: ['mp4', 'webm', 'ogv', 'mov', 'm4v', 'mpeg', 'mpg', 'avi'], icon: Movie, color: '#0000f2', bg: 'rgba(237, 255, 69, 0.5)' },
+  { extensions: ['mp3', 'wav', 'ogg', 'oga', 'm4a', 'aac', 'flac'], icon: MusicNote, color: '#0000f2', bg: 'rgba(0, 0, 242, 0.08)' },
+  { extensions: ['pdf'], icon: PictureAsPdf, color: '#c62828', bg: 'rgba(198, 40, 40, 0.08)' },
+  { extensions: ['xlsx', 'xls', 'csv'], icon: TableChart, color: '#0000f2', bg: 'rgba(237, 255, 69, 0.5)' },
+  { extensions: ['ppt', 'pptx', 'pptm', 'potx', 'potm', 'ppsx', 'ppsm'], icon: Slideshow, color: '#0000f2', bg: 'rgba(0, 0, 242, 0.08)' },
 ];
 
 function getExtension(file) {
@@ -52,10 +52,10 @@ function FileVisual({ file, size = 32 }) {
   if (file.type === 'folder') return <Folder sx={{ fontSize: size, color: 'secondary.main' }} />;
   const group = fileGroups.find((item) => item.extensions.includes(getExtension(file)));
   const Icon = group?.icon || Description;
-  const bg = group?.bg || 'rgba(68, 215, 182, 0.12)';
-  const color = group?.color || '#44d7b6';
+  const bg = group?.bg || 'rgba(0, 0, 242, 0.08)';
+  const color = group?.color || '#0000f2';
   return (
-    <Box sx={{ width: size, height: size, borderRadius: size > 36 ? '8px' : '7px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, backgroundColor: bg }}>
+    <Box sx={{ width: size, height: size, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, backgroundColor: bg, border: '1px solid rgba(0,0,242,0.18)' }}>
       <Icon sx={{ fontSize: Math.round(size * 0.7), color }} />
     </Box>
   );
@@ -110,7 +110,7 @@ function GridCard({ file, handlers }) {
   };
   const uploaderText = canReportFile(file, handlers.currentUserEmail) ? `Загрузил: ${file.owner_email}` : '';
   return (
-    <Paper elevation={0} draggable={isDraggableFile} onDragStart={(event) => setDraggedManagerItem(event, file)} onClick={open} onContextMenu={openContextMenu} onDragOver={handleDragOver} onDragLeave={() => setIsDragOver(false)} onDrop={handleDropOnCard} sx={{ p: 2, borderRadius: '12px', border: '1px solid', borderColor: isDragOver ? 'primary.main' : 'divider', position: 'relative', cursor: isDraggableFile ? 'grab' : 'pointer', backgroundColor: (theme) => (isDragOver ? 'rgba(68, 215, 182, 0.08)' : theme.ep.panel), transition: 'transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease', '&:hover': { boxShadow: (theme) => theme.ep.shadow, transform: 'translateY(-2px)', borderColor: 'primary.main', '& .grid-menu-btn,.download-btn,.favorite-btn,.edit-btn': { opacity: 1 } }, '&:active': { cursor: isDraggableFile ? 'grabbing' : 'pointer' } }}>
+    <Paper elevation={0} draggable={isDraggableFile} onDragStart={(event) => setDraggedManagerItem(event, file)} onClick={open} onContextMenu={openContextMenu} onDragOver={handleDragOver} onDragLeave={() => setIsDragOver(false)} onDrop={handleDropOnCard} sx={{ p: 2, minHeight: 148, border: '1px solid', borderColor: isDragOver ? 'secondary.main' : 'divider', position: 'relative', cursor: isDraggableFile ? 'grab' : 'pointer', backgroundColor: (theme) => (isDragOver ? 'rgba(237,255,69,0.18)' : theme.ep.panel), transition: 'background-color 150ms ease, border-color 150ms ease', '&:hover': { backgroundColor: (theme) => theme.palette.mode === 'dark' ? theme.ep.hover : 'rgba(0,0,242,0.045)', borderColor: 'primary.main', '& .grid-menu-btn,.download-btn,.favorite-btn,.edit-btn': { opacity: 1 } }, '&:active': { cursor: isDraggableFile ? 'grabbing' : 'pointer' } }}>
       {isFolder ? <FolderActions folder={file} handlers={handlers} /> : <GridActionButtons file={file} {...handlers} />}
       <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}><FileVisual file={file} size={44} /></Box>
       <Typography variant="subtitle2" sx={{ fontWeight: 500, mb: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', pr: { xs: 0, sm: 6 } }}>{file.name}</Typography>
@@ -144,15 +144,17 @@ export default function FileList({ files, viewMode, onFileDropped, ...handlers }
     if (droppedFiles.length > 0) onFileDropped?.(droppedFiles);
   };
   const wrapperSx = {
-    position: 'relative', width: '100%', minHeight: '300px', borderRadius: '12px',
-    boxShadow: isDragActive ? '0 0 0 3px rgba(68, 215, 182, 0.14)' : 'none',
+    position: 'relative', width: '100%', minHeight: '300px',
+    outline: isDragActive ? '3px solid rgba(237,255,69,0.8)' : 'none',
   };
   return (
     <Box onDragOver={(event) => { if (!hasDraggedSystemFiles(event)) return; event.preventDefault(); event.stopPropagation(); setIsDragActive(true); }} onDragLeave={() => setIsDragActive(false)} onDrop={handleDrop} sx={wrapperSx}>
       {viewMode === 'grid' ? (
-        <Grid container spacing={2}>{files.map((file) => <Grid item xs={12} sm={6} md={4} lg={3} key={`${file.type}-${file.id}`}><GridCard file={file} handlers={handlers} /></Grid>)}</Grid>
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))', md: 'repeat(3, minmax(0, 1fr))', lg: 'repeat(4, minmax(0, 1fr))' }, gap: 2 }}>
+          {files.map((file) => <GridCard key={`${file.type}-${file.id}`} file={file} handlers={handlers} />)}
+        </Box>
       ) : (
-        <Paper elevation={0} sx={{ borderRadius: '12px', border: '1px solid', borderColor: 'divider', overflow: 'hidden', backgroundColor: (theme) => theme.ep.panel }}>
+        <Paper elevation={0} sx={{ border: '1px solid', borderColor: 'divider', overflow: 'hidden', backgroundColor: (theme) => theme.ep.panel }}>
           {files.map((file) => <FileRow key={`${file.type}-${file.id}`} file={file} getFileIcon={(item, size) => <FileVisual file={item} size={size} />} formatFileSize={formatFileSize} formatDate={formatDate} onFileDropped={onFileDropped} {...handlers} />)}
         </Paper>
       )}

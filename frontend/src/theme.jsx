@@ -4,33 +4,38 @@ import { alpha, createTheme } from '@mui/material/styles';
 import { ThemeModeContext } from './themeMode';
 
 const THEME_STORAGE_KEY = 'ep_theme_mode';
-const themeModes = new Set(['light', 'dark']);
+const HERMES_BLUE = '#0000f2';
+const PAPER = '#f4f2ec';
+const ACID = '#edff45';
 
 function modeTokens(mode) {
   const dark = mode === 'dark';
   return {
     dark,
-    primary: dark ? '#44d7b6' : '#0f766e',
-    primaryLight: dark ? '#83f0d7' : '#14b8a6',
-    primaryDark: dark ? '#16a489' : '#0f5f58',
-    secondary: dark ? '#f4b95f' : '#b7791f',
-    secondaryLight: dark ? '#ffd894' : '#f6c76e',
-    secondaryDark: dark ? '#bd7f24' : '#7c4f12',
-    page: dark ? '#0b0d10' : '#f5f7fb',
-    paper: dark ? '#121417' : '#ffffff',
-    elevated: dark ? '#191d22' : '#ffffff',
-    header: dark ? 'rgba(18, 20, 23, 0.86)' : 'rgba(255, 255, 255, 0.86)',
-    panel: dark ? 'rgba(25, 29, 34, 0.88)' : 'rgba(255, 255, 255, 0.9)',
-    subtle: dark ? 'rgba(255,255,255,0.035)' : 'rgba(15, 23, 42, 0.035)',
-    hover: dark ? 'rgba(255,255,255,0.045)' : 'rgba(15, 23, 42, 0.045)',
-    line: dark ? 'rgba(236, 244, 255, 0.12)' : 'rgba(15, 23, 42, 0.12)',
-    text: dark ? '#f4f7fb' : '#101828',
-    textSecondary: dark ? '#9aa7b7' : '#64748b',
-    shadow: dark ? '0 18px 48px rgba(0, 0, 0, 0.28)' : '0 18px 48px rgba(15, 23, 42, 0.1)',
-    menuShadow: dark ? '0 18px 48px rgba(0, 0, 0, 0.42)' : '0 18px 48px rgba(15, 23, 42, 0.16)',
-    pageGradient: dark
-      ? 'radial-gradient(circle at 18% 0%, rgba(68, 215, 182, 0.16), transparent 28%), radial-gradient(circle at 100% 10%, rgba(244, 185, 95, 0.12), transparent 24%), #0b0d10'
-      : 'radial-gradient(circle at 18% 0%, rgba(20, 184, 166, 0.14), transparent 28%), radial-gradient(circle at 100% 10%, rgba(246, 199, 110, 0.16), transparent 24%), #f5f7fb',
+    blue: HERMES_BLUE,
+    acid: ACID,
+    onBlue: '#f8f7f2',
+    primary: dark ? '#f8f7f2' : HERMES_BLUE,
+    primaryLight: dark ? '#ffffff' : '#3939ff',
+    primaryDark: dark ? '#d9d7cf' : '#0000b8',
+    secondary: dark ? ACID : '#c7d600',
+    secondaryLight: '#f4ff86',
+    secondaryDark: '#aebc00',
+    page: dark ? HERMES_BLUE : PAPER,
+    paper: dark ? '#0000c7' : '#fffefa',
+    elevated: dark ? '#0808b6' : '#fffefa',
+    header: HERMES_BLUE,
+    panel: dark ? '#0808c9' : '#fffefa',
+    subtle: dark ? 'rgba(248,247,242,0.08)' : 'rgba(0,0,242,0.055)',
+    hover: dark ? 'rgba(248,247,242,0.12)' : 'rgba(0,0,242,0.085)',
+    line: dark ? 'rgba(248,247,242,0.42)' : 'rgba(0,0,242,0.3)',
+    text: dark ? '#f8f7f2' : '#0000c8',
+    textSecondary: dark ? 'rgba(248,247,242,0.72)' : '#4d4db0',
+    shadow: 'none',
+    menuShadow: dark ? '0 0 0 1px rgba(248,247,242,0.5)' : '0 0 0 1px rgba(0,0,242,0.35)',
+    pageGradient: dark ? HERMES_BLUE : PAPER,
+    displayFont: "'Bodoni Moda', 'Bodoni 72', Didot, 'Times New Roman', serif",
+    monoFont: "'IBM Plex Mono', 'SFMono-Regular', Consolas, 'Liberation Mono', monospace",
   };
 }
 
@@ -43,265 +48,205 @@ function createAppTheme(mode) {
         main: tokens.primary,
         light: tokens.primaryLight,
         dark: tokens.primaryDark,
-        contrastText: mode === 'dark' ? '#06110f' : '#ffffff',
+        contrastText: darkContrast(mode),
       },
       secondary: {
         main: tokens.secondary,
         light: tokens.secondaryLight,
         dark: tokens.secondaryDark,
-        contrastText: mode === 'dark' ? '#181006' : '#ffffff',
+        contrastText: HERMES_BLUE,
       },
-      error: {
-        main: mode === 'dark' ? '#ff6b7a' : '#dc2626',
-      },
-      warning: {
-        main: tokens.secondary,
-      },
-      success: {
-        main: mode === 'dark' ? '#4ade80' : '#16a34a',
-      },
-      background: {
-        default: tokens.page,
-        paper: tokens.paper,
-      },
-      text: {
-        primary: tokens.text,
-        secondary: tokens.textSecondary,
-      },
+      error: { main: darkColor(mode, '#ff9c9c', '#c62828') },
+      warning: { main: darkColor(mode, '#ffdc73', '#9b6400') },
+      success: { main: darkColor(mode, '#a9f5bd', '#087a42') },
+      background: { default: tokens.page, paper: tokens.paper },
+      text: { primary: tokens.text, secondary: tokens.textSecondary },
       divider: tokens.line,
     },
-    shape: {
-      borderRadius: 8,
-    },
+    shape: { borderRadius: 0 },
     typography: {
-      fontFamily: "'Google Sans', 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif",
-      h5: { letterSpacing: 0 },
-      button: { letterSpacing: 0, textTransform: 'none' },
+      fontFamily: tokens.monoFont,
+      h1: { fontFamily: tokens.displayFont, fontWeight: 400, lineHeight: 0.92, letterSpacing: 0 },
+      h2: { fontFamily: tokens.displayFont, fontWeight: 400, lineHeight: 0.94, letterSpacing: 0 },
+      h3: { fontFamily: tokens.displayFont, fontWeight: 400, lineHeight: 0.98, letterSpacing: 0 },
+      h4: { fontFamily: tokens.displayFont, fontWeight: 400, lineHeight: 1, letterSpacing: 0 },
+      h5: { fontFamily: tokens.displayFont, fontWeight: 400, lineHeight: 1.05, letterSpacing: 0 },
+      h6: { fontFamily: tokens.displayFont, fontWeight: 400, lineHeight: 1.1, letterSpacing: 0 },
+      subtitle1: { fontWeight: 700, letterSpacing: 0 },
+      subtitle2: { fontWeight: 700, letterSpacing: 0 },
+      overline: { fontFamily: tokens.monoFont, fontWeight: 700, letterSpacing: 0, lineHeight: 1.5 },
+      caption: { fontFamily: tokens.monoFont, letterSpacing: 0 },
+      button: { fontFamily: tokens.monoFont, fontWeight: 700, letterSpacing: 0, textTransform: 'uppercase' },
     },
-    components: {
-      MuiCssBaseline: {
-        styleOverrides: {
-          '@keyframes epFadeUp': {
-            from: {
-              opacity: 0,
-              transform: 'translate3d(0, 14px, 0)',
-            },
-            to: {
-              opacity: 1,
-              transform: 'translate3d(0, 0, 0)',
-            },
-          },
-          '@keyframes epScaleIn': {
-            from: {
-              opacity: 0,
-              transform: 'scale(0.98)',
-            },
-            to: {
-              opacity: 1,
-              transform: 'scale(1)',
-            },
-          },
-          '@keyframes epSoftPulse': {
-            '0%, 100%': {
-              transform: 'scale(1)',
-              boxShadow: `0 0 0 0 ${alpha(tokens.primary, 0.22)}`,
-            },
-            '50%': {
-              transform: 'scale(1.04)',
-              boxShadow: `0 0 0 12px ${alpha(tokens.primary, 0)}`,
-            },
-          },
-          '@keyframes epFloat': {
-            '0%, 100%': {
-              transform: 'translate3d(0, 0, 0)',
-            },
-            '50%': {
-              transform: 'translate3d(0, -6px, 0)',
-            },
-          },
-          body: {
-            background: tokens.pageGradient,
-            color: tokens.text,
-            transition: 'background 220ms ease, color 220ms ease',
-          },
-          '.ep-page': {
-            animation: 'epFadeUp 460ms cubic-bezier(0.22, 1, 0.36, 1) both',
-          },
-          '.ep-animate-in': {
-            animation: 'epFadeUp 520ms cubic-bezier(0.22, 1, 0.36, 1) both',
-          },
-          '.ep-scale-in': {
-            animation: 'epScaleIn 260ms cubic-bezier(0.22, 1, 0.36, 1) both',
-          },
-          '.ep-stagger > *': {
-            animation: 'epFadeUp 520ms cubic-bezier(0.22, 1, 0.36, 1) both',
-          },
-          '.ep-stagger > *:nth-of-type(2)': {
-            animationDelay: '70ms',
-          },
-          '.ep-stagger > *:nth-of-type(3)': {
-            animationDelay: '140ms',
-          },
-          '.ep-stagger > *:nth-of-type(4)': {
-            animationDelay: '210ms',
-          },
-          '.ep-stagger > *:nth-of-type(5)': {
-            animationDelay: '280ms',
-          },
-          '@media (prefers-reduced-motion: reduce)': {
-            '*, *::before, *::after': {
-              animationDuration: '0.001ms !important',
-              animationIterationCount: '1 !important',
-              scrollBehavior: 'auto !important',
-              transitionDuration: '0.001ms !important',
-            },
-          },
-          '::selection': {
-            backgroundColor: alpha(tokens.primary, 0.32),
-          },
-          '::-webkit-scrollbar-track': {
-            background: tokens.page,
-          },
-          '::-webkit-scrollbar-thumb': {
-            background: mode === 'dark' ? '#323b46' : '#c7d0dc',
-            borderRadius: 8,
-          },
-          '::-webkit-scrollbar-thumb:hover': {
-            background: mode === 'dark' ? '#4b5968' : '#9aa8ba',
-          },
-        },
-      },
-      MuiPaper: {
-        styleOverrides: {
-          root: {
-            backgroundImage: 'none',
-            backgroundColor: tokens.paper,
-            borderColor: tokens.line,
-            transition: 'background-color 220ms ease, border-color 220ms ease, box-shadow 220ms ease, transform 220ms cubic-bezier(0.22, 1, 0.36, 1)',
-          },
-        },
-      },
-      MuiCard: {
-        styleOverrides: {
-          root: {
-            transition: 'border-color 220ms ease, box-shadow 220ms ease, transform 220ms cubic-bezier(0.22, 1, 0.36, 1), filter 220ms ease',
-          },
-        },
-      },
-      MuiDialog: {
-        styleOverrides: {
-          paper: {
-            backgroundColor: tokens.elevated,
-            border: `1px solid ${tokens.line}`,
-            boxShadow: mode === 'dark' ? '0 24px 80px rgba(0, 0, 0, 0.55)' : '0 24px 80px rgba(15, 23, 42, 0.16)',
-            animation: 'epScaleIn 180ms cubic-bezier(0.22, 1, 0.36, 1) both',
-          },
-        },
-      },
-      MuiMenu: {
-        styleOverrides: {
-          paper: {
-            backgroundColor: tokens.elevated,
-            border: `1px solid ${tokens.line}`,
-            boxShadow: tokens.menuShadow,
-            animation: 'epScaleIn 160ms cubic-bezier(0.22, 1, 0.36, 1) both',
-          },
-        },
-      },
-      MuiMenuItem: {
-        styleOverrides: {
-          root: {
-            borderRadius: 6,
-            margin: '2px 6px',
-            minHeight: 38,
-            '&:hover': {
-              backgroundColor: alpha(tokens.primary, 0.12),
-            },
-          },
-        },
-      },
-      MuiButton: {
-        styleOverrides: {
-          root: {
-            borderRadius: 8,
-            fontWeight: 700,
-            transition: 'background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease, color 180ms ease, transform 180ms cubic-bezier(0.22, 1, 0.36, 1)',
-            '&:hover': {
-              transform: 'translateY(-1px)',
-            },
-            '&:active': {
-              transform: 'translateY(0) scale(0.98)',
-            },
-            '&.Mui-disabled': {
-              transform: 'none',
-            },
-          },
-          outlined: {
-            borderColor: tokens.line,
-          },
-        },
-      },
-      MuiIconButton: {
-        styleOverrides: {
-          root: {
-            transition: 'background-color 180ms ease, color 180ms ease, box-shadow 180ms ease, opacity 180ms ease, transform 180ms cubic-bezier(0.22, 1, 0.36, 1)',
-            '&:hover': {
-              transform: 'translateY(-1px)',
-            },
-            '&:active': {
-              transform: 'translateY(0) scale(0.94)',
-            },
-            '&.Mui-disabled': {
-              transform: 'none',
-            },
-          },
-        },
-      },
-      MuiFab: {
-        styleOverrides: {
-          root: {
-            transition: 'filter 180ms ease, box-shadow 180ms ease, transform 180ms cubic-bezier(0.22, 1, 0.36, 1)',
-            '&:hover': {
-              transform: 'translateY(-3px)',
-            },
-            '&:active': {
-              transform: 'translateY(0) scale(0.98)',
-            },
-          },
-        },
-      },
-      MuiTextField: {
-        defaultProps: {
-          variant: 'outlined',
-        },
-      },
-      MuiOutlinedInput: {
-        styleOverrides: {
-          root: {
-            backgroundColor: mode === 'dark' ? alpha('#ffffff', 0.045) : alpha('#0f172a', 0.035),
-            '& fieldset': {
-              borderColor: tokens.line,
-            },
-            '&:hover fieldset': {
-              borderColor: alpha(tokens.primary, 0.55),
-            },
-            '&.Mui-focused fieldset': {
-              borderColor: tokens.primary,
-            },
-          },
-        },
-      },
-    },
+    components: buildComponents(tokens, mode),
   });
 
   theme.ep = tokens;
   return theme;
 }
 
+function darkContrast(mode) {
+  return mode === 'dark' ? HERMES_BLUE : '#f8f7f2';
+}
+
+function darkColor(mode, darkValue, lightValue) {
+  return mode === 'dark' ? darkValue : lightValue;
+}
+
+function buildComponents(tokens, mode) {
+  return {
+    MuiCssBaseline: {
+      styleOverrides: {
+        '@keyframes epFadeUp': {
+          from: { opacity: 0, transform: 'translate3d(0, 12px, 0)' },
+          to: { opacity: 1, transform: 'translate3d(0, 0, 0)' },
+        },
+        '@keyframes epScaleIn': {
+          from: { opacity: 0, transform: 'scale(0.985)' },
+          to: { opacity: 1, transform: 'scale(1)' },
+        },
+        '@keyframes epSoftPulse': {
+          '0%, 100%': { opacity: 0.72 },
+          '50%': { opacity: 1 },
+        },
+        '@keyframes epFloat': {
+          '0%, 100%': { transform: 'translate3d(0, 0, 0)' },
+          '50%': { transform: 'translate3d(0, -5px, 0)' },
+        },
+        body: {
+          background: tokens.page,
+          color: tokens.text,
+          fontFamily: tokens.monoFont,
+          transition: 'background-color 180ms ease, color 180ms ease',
+        },
+        '.ep-page': { animation: 'epFadeUp 420ms ease-out both' },
+        '.ep-animate-in': { animation: 'epFadeUp 480ms ease-out both' },
+        '.ep-scale-in': { animation: 'epScaleIn 220ms ease-out both' },
+        '.ep-stagger > *': { animation: 'epFadeUp 460ms ease-out both' },
+        '.ep-stagger > *:nth-of-type(2)': { animationDelay: '55ms' },
+        '.ep-stagger > *:nth-of-type(3)': { animationDelay: '110ms' },
+        '.ep-stagger > *:nth-of-type(4)': { animationDelay: '165ms' },
+        '.ep-stagger > *:nth-of-type(5)': { animationDelay: '220ms' },
+        '.ep-display': { fontFamily: tokens.displayFont, fontWeight: 400, letterSpacing: 0 },
+        '.ep-kicker': { fontFamily: tokens.monoFont, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0 },
+        '.MuiPaper-root, .MuiCard-root, .MuiButton-root, .MuiIconButton-root, .MuiFab-root, .MuiChip-root, .MuiAvatar-root, .MuiOutlinedInput-root, .MuiAlert-root, .MuiLinearProgress-root, .MuiLinearProgress-bar': {
+          borderRadius: '0 !important',
+        },
+        '@media (prefers-reduced-motion: reduce)': {
+          '*, *::before, *::after': {
+            animationDuration: '0.001ms !important',
+            animationIterationCount: '1 !important',
+            scrollBehavior: 'auto !important',
+            transitionDuration: '0.001ms !important',
+          },
+        },
+        '::selection': { backgroundColor: ACID, color: HERMES_BLUE },
+        '::-webkit-scrollbar-track': { background: tokens.page },
+        '::-webkit-scrollbar-thumb': { background: tokens.primary, borderRadius: 0 },
+        '::-webkit-scrollbar-thumb:hover': { background: tokens.secondary },
+      },
+    },
+    MuiPaper: {
+      defaultProps: { elevation: 0, square: true },
+      styleOverrides: {
+        root: {
+          backgroundImage: 'none',
+          boxShadow: 'none',
+          borderRadius: 0,
+          transition: 'background-color 160ms ease, border-color 160ms ease, color 160ms ease',
+        },
+      },
+    },
+    MuiCard: {
+      defaultProps: { elevation: 0, square: true },
+      styleOverrides: { root: { borderRadius: 0, boxShadow: 'none' } },
+    },
+    MuiDialog: {
+      styleOverrides: {
+        paper: {
+          borderRadius: 0,
+          border: `1px solid ${tokens.line}`,
+          boxShadow: tokens.menuShadow,
+          animation: 'epScaleIn 160ms ease-out both',
+        },
+      },
+    },
+    MuiMenu: {
+      styleOverrides: {
+        paper: { borderRadius: 0, border: `1px solid ${tokens.line}`, boxShadow: tokens.menuShadow },
+        list: { padding: 0 },
+      },
+    },
+    MuiMenuItem: {
+      styleOverrides: {
+        root: {
+          borderRadius: 0,
+          margin: 0,
+          minHeight: 42,
+          borderBottom: `1px solid ${tokens.line}`,
+          '&:last-of-type': { borderBottom: 0 },
+          '&:hover': { backgroundColor: tokens.hover },
+        },
+      },
+    },
+    MuiButton: {
+      defaultProps: { disableElevation: true },
+      styleOverrides: {
+        root: {
+          borderRadius: 0,
+          minHeight: 40,
+          boxShadow: 'none',
+          paddingInline: 18,
+          transition: 'background-color 140ms ease, color 140ms ease, border-color 140ms ease',
+          '&:hover': { boxShadow: 'none' },
+        },
+        outlined: { borderColor: tokens.line, borderWidth: 1, '&:hover': { borderWidth: 1 } },
+      },
+    },
+    MuiIconButton: {
+      styleOverrides: {
+        root: {
+          borderRadius: 0,
+          transition: 'background-color 140ms ease, color 140ms ease',
+          '&:hover': { backgroundColor: tokens.hover },
+        },
+      },
+    },
+    MuiFab: {
+      styleOverrides: { root: { borderRadius: 0, boxShadow: 'none', '&:hover': { boxShadow: 'none' } } },
+    },
+    MuiTextField: { defaultProps: { variant: 'outlined' } },
+    MuiOutlinedInput: {
+      styleOverrides: {
+        root: {
+          borderRadius: 0,
+          backgroundColor: mode === 'dark' ? alpha('#ffffff', 0.045) : 'transparent',
+          '& fieldset': { borderColor: tokens.line },
+          '&:hover fieldset': { borderColor: tokens.primary },
+          '&.Mui-focused fieldset': { borderColor: tokens.primary, borderWidth: 1 },
+        },
+      },
+    },
+    MuiChip: {
+      styleOverrides: { root: { borderRadius: 0, fontFamily: tokens.monoFont, fontWeight: 700 } },
+    },
+    MuiAvatar: { styleOverrides: { root: { borderRadius: 0 } } },
+    MuiLinearProgress: {
+      styleOverrides: { root: { borderRadius: 0 }, bar: { borderRadius: 0 } },
+    },
+    MuiAlert: {
+      styleOverrides: { root: { borderRadius: 0, border: `1px solid ${tokens.line}` } },
+    },
+    MuiTableCell: {
+      styleOverrides: { root: { borderColor: tokens.line, fontFamily: tokens.monoFont } },
+    },
+    MuiTooltip: { defaultProps: { arrow: true } },
+  };
+}
+
 function getInitialMode() {
   const savedMode = localStorage.getItem(THEME_STORAGE_KEY);
-  if (themeModes.has(savedMode)) return savedMode;
-  return window.matchMedia?.('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  return savedMode === 'dark' || savedMode === 'light' ? savedMode : 'light';
 }
 
 export function AppThemeProvider({ children }) {
@@ -309,7 +254,7 @@ export function AppThemeProvider({ children }) {
   const theme = useMemo(() => createAppTheme(mode), [mode]);
   const value = useMemo(() => ({
     mode,
-    followsSystem: !localStorage.getItem(THEME_STORAGE_KEY),
+    followsSystem: false,
     toggleMode: () => {
       setMode((currentMode) => {
         const nextMode = currentMode === 'dark' ? 'light' : 'dark';
@@ -321,25 +266,8 @@ export function AppThemeProvider({ children }) {
 
   useEffect(() => {
     document.documentElement.dataset.theme = mode;
+    document.documentElement.style.colorScheme = mode;
   }, [mode]);
-
-  useEffect(() => {
-    if (localStorage.getItem(THEME_STORAGE_KEY)) return undefined;
-    if (!window.matchMedia) return undefined;
-
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: light)');
-    const handleSystemThemeChange = (event) => {
-      setMode(event.matches ? 'light' : 'dark');
-    };
-
-    mediaQuery.addEventListener?.('change', handleSystemThemeChange);
-    mediaQuery.addListener?.(handleSystemThemeChange);
-
-    return () => {
-      mediaQuery.removeEventListener?.('change', handleSystemThemeChange);
-      mediaQuery.removeListener?.(handleSystemThemeChange);
-    };
-  }, []);
 
   return (
     <ThemeModeContext.Provider value={value}>

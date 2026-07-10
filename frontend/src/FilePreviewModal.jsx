@@ -881,7 +881,7 @@ function SpreadsheetPreview({ office, theme }) {
   if (!activeSheet) return <div style={{ color: theme.palette.text.secondary }}>В книге нет данных для предпросмотра.</div>;
 
   return (
-    <div style={{ width: '100%', height: '70vh', minHeight: 360, display: 'flex', flexDirection: 'column', background: theme.palette.background.paper, border: `1px solid ${theme.palette.divider}`, borderRadius: 8, overflow: 'hidden' }}>
+    <div style={{ width: '100%', height: '70vh', minHeight: 360, display: 'flex', flexDirection: 'column', background: theme.palette.background.paper, border: `1px solid ${theme.palette.divider}`, borderRadius: 0, overflow: 'hidden' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '10px 12px', borderBottom: `1px solid ${theme.palette.divider}`, background: theme.ep.subtle }}>
         <div style={{ minWidth: 0 }}>
           <strong style={{ display: 'block', color: theme.palette.text.primary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{activeSheet.name}</strong>
@@ -897,7 +897,7 @@ function SpreadsheetPreview({ office, theme }) {
               onClick={() => setActiveSheetIndex(index)}
               style={{
                 border: `1px solid ${index === activeSheetIndex ? theme.palette.primary.main : theme.palette.divider}`,
-                borderRadius: 6,
+                borderRadius: 0,
                 background: index === activeSheetIndex ? alpha(theme.palette.primary.main, 0.14) : theme.palette.background.paper,
                 color: index === activeSheetIndex ? theme.palette.primary.main : theme.palette.text.primary,
                 cursor: 'pointer',
@@ -1075,7 +1075,7 @@ function PresentationPreview({ office, theme }) {
               gap: 6,
               alignItems: 'start',
               border: `2px solid ${index === activeSlideIndex ? theme.palette.primary.main : 'transparent'}`,
-              borderRadius: 6,
+              borderRadius: 0,
               background: index === activeSlideIndex ? alpha(theme.palette.primary.main, 0.12) : 'transparent',
               color: theme.palette.text.primary,
               cursor: 'pointer',
@@ -1110,39 +1110,41 @@ function OfficePreview({ office, theme }) {
   if (!office) return null;
   if (office.type === 'spreadsheet') return <SpreadsheetPreview office={office} theme={theme} />;
   if (office.type === 'presentation') return <PresentationPreview office={office} theme={theme} />;
-  return <div style={{ width: '100%', maxHeight: '70vh', overflow: 'auto', background: theme.palette.background.paper, color: theme.palette.text.primary, padding: 18, borderRadius: 8 }}>{office.paragraphs.map((paragraph, index) => <p key={`paragraph-${index}`} style={{ margin: '0 0 10px', lineHeight: 1.55 }}>{paragraph}</p>)}</div>;
+  return <div style={{ width: '100%', maxHeight: '70vh', overflow: 'auto', background: theme.palette.background.paper, color: theme.palette.text.primary, padding: 18, borderRadius: 0 }}>{office.paragraphs.map((paragraph, index) => <p key={`paragraph-${index}`} style={{ margin: '0 0 10px', lineHeight: 1.55 }}>{paragraph}</p>)}</div>;
 }
 
 function PreviewContent({ file, state, theme }) {
   const type = getPreviewType(file.name);
-  const mediaStyle = { maxWidth: '100%', maxHeight: '70vh', borderRadius: 8 };
+  const mediaStyle = { maxWidth: '100%', maxHeight: '70vh', borderRadius: 0 };
   if (state.loading) return <div style={{ color: theme.palette.text.secondary }}>Загрузка данных...</div>;
   if (state.error) return <div style={{ color: theme.palette.error.main, fontWeight: 600 }}>{state.error}</div>;
   if (type === 'image') return <img src={state.previewUrl} alt="Preview" style={mediaStyle} />;
   if (type === 'video') return <video src={state.previewUrl} style={{ ...mediaStyle, width: '100%', background: '#000' }} controls />;
   if (type === 'audio') return <audio src={state.previewUrl} controls style={{ width: '100%' }} />;
-  if (type === 'pdf') return <iframe src={`${state.previewUrl}#toolbar=1&navpanes=0`} title={file.name} style={{ width: '100%', height: '70vh', border: `1px solid ${theme.palette.divider}`, borderRadius: 8, background: '#fff' }} />;
+  if (type === 'pdf') return <iframe src={`${state.previewUrl}#toolbar=1&navpanes=0`} title={file.name} style={{ width: '100%', height: '70vh', border: `1px solid ${theme.palette.divider}`, borderRadius: 0, background: '#fff' }} />;
   if (type === 'office') return <OfficePreview office={state.office} theme={theme} />;
-  return <pre style={{ width: '100%', maxHeight: '70vh', overflow: 'auto', background: theme.palette.background.paper, color: theme.palette.text.primary, border: `1px solid ${theme.palette.divider}`, padding: 16, borderRadius: 8, whiteSpace: 'pre-wrap' }}>{state.content}</pre>;
+  return <pre style={{ width: '100%', maxHeight: '70vh', overflow: 'auto', background: theme.palette.background.paper, color: theme.palette.text.primary, border: `1px solid ${theme.palette.divider}`, padding: 16, borderRadius: 0, whiteSpace: 'pre-wrap' }}>{state.content}</pre>;
 }
 
 const baseButtonStyle = {
   border: '1px solid transparent',
-  borderRadius: 8,
+  borderRadius: 0,
   cursor: 'pointer',
   fontSize: 14,
   fontWeight: 700,
   minHeight: 38,
   padding: '9px 16px',
-  transition: 'background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease',
+  fontFamily: "'IBM Plex Mono', monospace",
+  textTransform: 'uppercase',
+  transition: 'background-color 160ms ease, border-color 160ms ease, color 160ms ease',
 };
 
 const downloadButtonStyle = {
   ...baseButtonStyle,
-  background: '#dcefe3',
-  borderColor: '#b7dbc5',
-  color: '#1f6b43',
-  boxShadow: '0 6px 16px rgba(31, 107, 67, 0.12)',
+  background: '#0000f2',
+  borderColor: '#0000f2',
+  color: '#f8f7f2',
+  boxShadow: 'none',
 };
 
 const closeButtonStyle = {
@@ -1185,20 +1187,20 @@ export default function FilePreviewModal({ file, onClose }) {
     background: alpha(theme.palette.error.main, 0.12),
     borderColor: alpha(theme.palette.error.main, 0.32),
     color: theme.palette.error.main,
-    ...(hoveredButton === 'close' ? { background: alpha(theme.palette.error.main, 0.18), borderColor: alpha(theme.palette.error.main, 0.46), boxShadow: `0 8px 20px ${alpha(theme.palette.error.main, 0.16)}`, transform: 'translateY(-1px)' } : {}),
+    ...(hoveredButton === 'close' ? { background: alpha(theme.palette.error.main, 0.18), borderColor: alpha(theme.palette.error.main, 0.46) } : {}),
   };
   const downloadButtonCurrentStyle = {
     ...downloadButtonStyle,
-    background: alpha(theme.palette.success.main, 0.12),
-    borderColor: alpha(theme.palette.success.main, 0.32),
-    color: theme.palette.success.main,
-    ...(hoveredButton === 'download' && !downloading ? { background: alpha(theme.palette.success.main, 0.18), borderColor: alpha(theme.palette.success.main, 0.46), boxShadow: `0 8px 20px ${alpha(theme.palette.success.main, 0.16)}`, transform: 'translateY(-1px)' } : {}),
+    background: theme.ep.blue,
+    borderColor: theme.ep.blue,
+    color: theme.ep.onBlue,
+    ...(hoveredButton === 'download' && !downloading ? { background: theme.ep.acid, borderColor: theme.ep.blue, color: theme.ep.blue } : {}),
     ...(downloading ? { cursor: 'not-allowed', opacity: 0.68, transform: 'none' } : {}),
   };
 
   return (
     <div style={{ position: 'fixed', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: alpha('#000', theme.palette.mode === 'dark' ? 0.78 : 0.64), zIndex: 2000, padding: isPresentation ? 10 : 16 }} onClick={onClose}>
-      <div style={{ background: theme.palette.background.paper, color: theme.palette.text.primary, border: `1px solid ${theme.palette.divider}`, boxShadow: theme.ep.menuShadow, borderRadius: 12, width: isPresentation ? 'min(98vw, 1480px)' : 'min(95vw, 920px)', height: isPresentation ? '96vh' : undefined, maxHeight: isPresentation ? '96vh' : '85vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }} onClick={(event) => event.stopPropagation()} role="dialog" aria-modal="true">
+      <div style={{ background: theme.palette.background.paper, color: theme.palette.text.primary, border: `1px solid ${theme.palette.divider}`, boxShadow: theme.ep.menuShadow, borderRadius: 0, width: isPresentation ? 'min(98vw, 1480px)' : 'min(95vw, 920px)', height: isPresentation ? '96vh' : undefined, maxHeight: isPresentation ? '96vh' : '85vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }} onClick={(event) => event.stopPropagation()} role="dialog" aria-modal="true">
         <div style={{ display: 'flex', alignItems: 'center', padding: 16, borderBottom: `1px solid ${theme.palette.divider}` }}><strong style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{file.name}</strong></div>
         <div style={{ flex: 1, minHeight: 0, overflow: 'auto', background: theme.ep.subtle, padding: isPresentation ? 0 : 24, display: 'flex', alignItems: isPresentation ? 'stretch' : 'center', justifyContent: 'center' }}><PreviewContent file={file} state={{ ...state, error: state.error || downloadError }} theme={theme} /></div>
         <div style={{ padding: 14, borderTop: `1px solid ${theme.palette.divider}`, display: 'flex', justifyContent: 'space-between', gap: 12 }}><button type="button" style={downloadButtonCurrentStyle} onMouseEnter={() => setHoveredButton('download')} onMouseLeave={() => setHoveredButton('')} onClick={() => downloadFile(file, setDownloadError, setDownloading)} disabled={downloading}>{downloading ? 'Скачивание...' : 'Скачать'}</button><button type="button" style={closeButtonCurrentStyle} onMouseEnter={() => setHoveredButton('close')} onMouseLeave={() => setHoveredButton('')} onClick={onClose}>Закрыть</button></div>
