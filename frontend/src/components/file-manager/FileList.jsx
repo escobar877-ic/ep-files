@@ -54,9 +54,10 @@ function FileVisual({ file, size = 32 }) {
   const Icon = group?.icon || Description;
   const bg = group?.bg || 'rgba(0, 0, 242, 0.08)';
   const color = group?.color || '#0000f2';
+  const usesBrandColor = color === '#0000f2';
   return (
-    <Box sx={{ width: size, height: size, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, backgroundColor: bg, border: '1px solid rgba(0,0,242,0.18)' }}>
-      <Icon sx={{ fontSize: Math.round(size * 0.7), color }} />
+    <Box sx={{ width: size, height: size, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, backgroundColor: (theme) => (usesBrandColor && theme.palette.mode === 'dark' ? theme.ep.subtle : bg), border: '1px solid', borderColor: 'divider' }}>
+      <Icon sx={{ fontSize: Math.round(size * 0.7), color: usesBrandColor ? 'primary.main' : color }} />
     </Box>
   );
 }
@@ -69,10 +70,10 @@ function GridActionButtons({ file, onFavoriteClick, onDownloadClick, onEditClick
   const buttonSx = { opacity: { xs: 1, sm: 0 }, transition: 'opacity 0.2s', zIndex: 30 };
   return (
     <>
-      <Tooltip title={file.is_favorite ? 'Убрать из избранного' : 'Добавить в избранное'}><IconButton className="favorite-btn" onClick={(event) => { event.stopPropagation(); onFavoriteClick?.(file); }} sx={{ ...buttonSx, position: 'absolute', top: 8, right: 104, color: file.is_favorite ? '#f59e0b' : '#2196F3' }} size="small"><Star fontSize="small" /></IconButton></Tooltip>
-      {isEditableTextFile(file) && onEditClick && <Tooltip title="Редактировать"><IconButton className="edit-btn" onClick={(event) => { event.stopPropagation(); onEditClick(file); }} sx={{ ...buttonSx, position: 'absolute', top: 8, right: 72, color: '#1976D2' }} size="small"><Edit fontSize="small" /></IconButton></Tooltip>}
-      <Tooltip title="Скачать"><IconButton className="download-btn" onClick={(event) => { event.stopPropagation(); onDownloadClick?.(file.id, file.name, file.type); }} sx={{ ...buttonSx, position: 'absolute', top: 8, right: 40, color: '#2196F3' }} size="small"><DownloadIcon fontSize="small" /></IconButton></Tooltip>
-      <IconButton className="grid-menu-btn" onClick={(event) => { event.stopPropagation(); onMenuOpen?.(event, file, file.type); }} sx={{ ...buttonSx, position: 'absolute', top: 8, right: 8, color: '#757575' }} size="small"><MoreVert fontSize="small" /></IconButton>
+      <Tooltip title={file.is_favorite ? 'Убрать из избранного' : 'Добавить в избранное'}><IconButton className="favorite-btn" onClick={(event) => { event.stopPropagation(); onFavoriteClick?.(file); }} sx={{ ...buttonSx, position: 'absolute', top: 8, right: 104, color: file.is_favorite ? 'secondary.main' : 'primary.main' }} size="small"><Star fontSize="small" /></IconButton></Tooltip>
+      {isEditableTextFile(file) && onEditClick && <Tooltip title="Редактировать"><IconButton className="edit-btn" onClick={(event) => { event.stopPropagation(); onEditClick(file); }} sx={{ ...buttonSx, position: 'absolute', top: 8, right: 72, color: 'primary.main' }} size="small"><Edit fontSize="small" /></IconButton></Tooltip>}
+      <Tooltip title="Скачать"><IconButton className="download-btn" onClick={(event) => { event.stopPropagation(); onDownloadClick?.(file.id, file.name, file.type); }} sx={{ ...buttonSx, position: 'absolute', top: 8, right: 40, color: 'primary.main' }} size="small"><DownloadIcon fontSize="small" /></IconButton></Tooltip>
+      <IconButton className="grid-menu-btn" onClick={(event) => { event.stopPropagation(); onMenuOpen?.(event, file, file.type); }} sx={{ ...buttonSx, position: 'absolute', top: 8, right: 8, color: 'text.secondary' }} size="small"><MoreVert fontSize="small" /></IconButton>
     </>
   );
 }

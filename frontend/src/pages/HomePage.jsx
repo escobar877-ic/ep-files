@@ -115,7 +115,7 @@ export default function HomePage() {
 
   if (user) {
     return (
-      <Box className="ep-page" sx={{ minHeight: '100vh', backgroundColor: '#f4f2ec' }}>
+      <Box className="ep-page" sx={{ minHeight: '100vh', backgroundColor: 'background.default' }}>
         <input id="home-quick-upload-input" type="file" style={{ display: 'none' }} onChange={handleQuickUploadChange} />
         <HomeHeader user={user} />
         <AuthenticatedWorkspace

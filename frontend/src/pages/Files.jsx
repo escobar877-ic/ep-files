@@ -49,9 +49,10 @@ function FavoriteFileIcon({ item, size = 48 }) {
   const Icon = group?.icon || Description;
   const bg = group?.bg || 'rgba(0,0,242,0.08)';
   const color = group?.color || '#0000f2';
+  const usesBrandColor = color === '#0000f2';
   return (
-    <Box sx={{ width: size, height: size, borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, backgroundColor: bg }}>
-      <Icon sx={{ fontSize: Math.round(size * 0.7), color }} />
+    <Box sx={{ width: size, height: size, borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, backgroundColor: (theme) => (usesBrandColor && theme.palette.mode === 'dark' ? theme.ep.subtle : bg), border: '1px solid', borderColor: 'divider' }}>
+      <Icon sx={{ fontSize: Math.round(size * 0.7), color: usesBrandColor ? 'primary.main' : color }} />
     </Box>
   );
 }
@@ -116,7 +117,7 @@ function StatsCard({ user, stats }) {
       <Typography variant="body2" color="text.secondary">Электронная почта</Typography>
       <Typography variant="body1" sx={{ fontWeight: 500, mb: 3, overflowWrap: 'anywhere' }}>{user?.email || '-'}</Typography>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}><Storage sx={{ color: 'text.secondary' }} /><Typography variant="body2">Занято {formatFileSize(used)} из {formatFileSize(total)}</Typography></Box>
-      <Box sx={{ width: '100%', height: 8, bgcolor: 'rgba(0,0,242,0.1)', overflow: 'hidden' }}><Box sx={{ width: `${percent}%`, height: '100%', bgcolor: percent > 85 ? 'error.main' : 'primary.main' }} /></Box>
+      <Box sx={{ width: '100%', height: 8, bgcolor: (theme) => theme.ep.subtle, overflow: 'hidden' }}><Box sx={{ width: `${percent}%`, height: '100%', bgcolor: percent > 85 ? 'error.main' : 'primary.main' }} /></Box>
       <Typography variant="caption" color="text.secondary">{percent}% использовано</Typography>
     </Paper>
   );

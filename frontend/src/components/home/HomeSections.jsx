@@ -1,20 +1,26 @@
 import { Link } from 'react-router-dom';
-import { Box, Button, Container, Typography } from '@mui/material';
+import { Box, Button, Container, IconButton, Tooltip, Typography } from '@mui/material';
 import {
   ArrowForward,
+  DarkMode,
   Folder,
+  LightMode,
   Login as LoginIcon,
   PersonAdd,
   Share,
 } from '@mui/icons-material';
 import HeaderProfileButton from '../HeaderProfileButton';
 import BrandWordmark from '../BrandWordmark';
+import { useThemeMode } from '../../themeMode';
 
 const blue = '#0000f2';
 const paper = '#f8f7f2';
 const acid = '#edff45';
 
 export function HomeHeader({ user }) {
+  const { mode, toggleMode } = useThemeMode();
+  const nextThemeLabel = mode === 'dark' ? 'Включить светлую тему' : 'Включить тёмную тему';
+
   return (
     <Box
       component="header"
@@ -61,17 +67,28 @@ export function HomeHeader({ user }) {
               Создать аккаунт
             </Button>
           ) : (
-            <HeaderProfileButton
-              user={user}
-              component={Link}
-              to="/files"
-              sx={{
-                color: paper,
-                borderColor: 'rgba(248,247,242,0.55)',
-                backgroundColor: 'transparent',
-                minWidth: { xs: 44, sm: 170 },
-              }}
-            />
+            <>
+              <Tooltip title={nextThemeLabel}>
+                <IconButton
+                  onClick={toggleMode}
+                  aria-label={nextThemeLabel}
+                  sx={{ width: 40, height: 40, color: paper, border: '1px solid rgba(248,247,242,0.55)' }}
+                >
+                  {mode === 'dark' ? <LightMode /> : <DarkMode />}
+                </IconButton>
+              </Tooltip>
+              <HeaderProfileButton
+                user={user}
+                component={Link}
+                to="/files"
+                sx={{
+                  color: paper,
+                  borderColor: 'rgba(248,247,242,0.55)',
+                  backgroundColor: 'transparent',
+                  minWidth: { xs: 44, sm: 170 },
+                }}
+              />
+            </>
           )}
         </Box>
       </Box>

@@ -89,8 +89,20 @@ export default function AuthShell({ eyebrow, title, subtitle, children }) {
       <Container maxWidth="xl" sx={{ minHeight: 'calc(100svh - 86px)', display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1.08fr 0.92fr' }, alignItems: 'center', gap: { xs: 3, md: 7 }, py: { xs: 4, md: 6 }, px: { xs: 2, sm: 4, md: 7 } }}>
         <Box sx={{ minWidth: 0 }}>
           <Typography variant="overline" sx={{ color: '#f8f7f2' }}>{eyebrow}</Typography>
-          <Typography className="ep-display" component="h1" sx={{ mt: 2, color: '#f8f7f2', fontSize: { xs: '3.6rem', sm: '5.4rem', md: '6.4rem' }, lineHeight: 0.82 }}>
-            {title}
+          <Typography
+            className="ep-display"
+            component="h1"
+            sx={{
+              mt: 2,
+              color: '#f8f7f2',
+              fontSize: { xs: '3.05rem', sm: '4.5rem', md: '5.2rem' },
+              lineHeight: 0.96,
+              maxWidth: 640,
+            }}
+          >
+            {Array.isArray(title)
+              ? title.map((line) => <Box component="span" key={line} sx={{ display: 'block', whiteSpace: 'nowrap' }}>{line}</Box>)
+              : title}
           </Typography>
           <Typography sx={{ color: 'rgba(248,247,242,0.72)', maxWidth: 540, mt: 3, fontSize: '0.82rem' }}>{subtitle}</Typography>
           <Box sx={{ display: { xs: 'none', md: 'block' }, height: 220, mt: 4, overflow: 'hidden', border: '1px solid rgba(248,247,242,0.45)' }}>

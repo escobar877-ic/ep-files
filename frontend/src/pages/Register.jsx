@@ -75,7 +75,7 @@ export default function Register() {
   };
 
   return (
-    <AuthShell eyebrow="EP FILES • NEW ACCOUNT" title={<>СОЗДАЙТЕ<br />СВОЙ<br />АРХИВ</>} subtitle="100 МБ личного пространства, папки, избранное, история действий и управляемые публичные ссылки.">
+    <AuthShell eyebrow="EP FILES • NEW ACCOUNT" title={['СОЗДАЙТЕ', 'СВОЙ', 'АРХИВ']} subtitle="100 МБ личного пространства, папки, избранное, история действий и управляемые публичные ссылки.">
       <RegisterForm register={register} errors={errors} isSubmitting={isSubmitting} onSubmit={onSubmit} handleSubmit={handleSubmit} error={error} />
     </AuthShell>
   );

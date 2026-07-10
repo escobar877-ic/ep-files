@@ -31,12 +31,14 @@ import {
   Close,
   CloudUpload,
   Delete,
+  DarkMode,
   Download as DownloadIcon,
   Edit,
   Folder as FolderIcon,
   FolderOpen,
   GridView,
   Home,
+  LightMode,
   NavigateNext,
   ReportProblem,
   RestoreFromTrash,
@@ -54,8 +56,11 @@ import MoveFolderDialog from '../../components/file-manager/MoveFolderDialog';
 import TaskStatusItem from '../../components/TaskStatusItem';
 import TextFileEditorDialog from '../../components/file-manager/TextFileEditorDialog';
 import { hasDraggedSystemFiles } from '../../components/file-manager/dragDrop';
+import { useThemeMode } from '../../themeMode';
 
 function FileManagerHeader({ user, searchQuery, setSearchQuery, navigate }) {
+  const { mode, toggleMode } = useThemeMode();
+  const nextThemeLabel = mode === 'dark' ? 'Включить светлую тему' : 'Включить тёмную тему';
   const headerButtonSx = {
     minWidth: { xs: 0, sm: 150 },
     height: 40,
@@ -72,6 +77,11 @@ function FileManagerHeader({ user, searchQuery, setSearchQuery, navigate }) {
         <BrandWordmark inverse compact />
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, justifySelf: 'end' }}>
           <Button color="inherit" onClick={() => navigate('/trash')} startIcon={<RestoreFromTrash />} sx={{ ...headerButtonSx, minWidth: { xs: 42, sm: 130 }, px: { xs: 0.5, sm: 1.5 }, '& .MuiButton-startIcon': { display: { xs: 'none', sm: 'inherit' } } }}>Корзина</Button>
+          <Tooltip title={nextThemeLabel}>
+            <IconButton onClick={toggleMode} aria-label={nextThemeLabel} sx={{ width: 40, height: 40, color: '#f8f7f2', border: '1px solid rgba(248,247,242,0.55)' }}>
+              {mode === 'dark' ? <LightMode /> : <DarkMode />}
+            </IconButton>
+          </Tooltip>
           <HeaderProfileButton user={user} onClick={() => navigate('/files')} sx={{ ...headerButtonSx, color: '#f8f7f2', borderColor: 'rgba(248,247,242,0.55)', backgroundColor: 'transparent', minWidth: { xs: 42, sm: 170 } }} />
         </Box>
       </Box>
