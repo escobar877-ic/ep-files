@@ -69,14 +69,14 @@ export default function Login() {
       setError('');
       setNotice('');
       await login(data.email, data.password);
-      navigate('/files');
+      navigate('/file-manager', { replace: true });
     } catch (err) {
       setError(getLoginError(err));
     }
   };
 
   return (
-    <AuthShell eyebrow="EP FILES • AUTHORIZATION" title={<>ВЕРНИТЕСЬ<br />К СВОИМ<br />ФАЙЛАМ</>} subtitle="Сессия защищена JWT-токенами в httpOnly cookies. После входа вы сразу попадете в личный кабинет.">
+    <AuthShell eyebrow="EP FILES • AUTHORIZATION" title={<>ВЕРНИТЕСЬ<br />К СВОИМ<br />ФАЙЛАМ</>} subtitle="Сессия защищена JWT-токенами в httpOnly cookies. После входа сразу откроется файловый менеджер.">
       <LoginForm register={register} errors={errors} isSubmitting={isSubmitting} onSubmit={onSubmit} handleSubmit={handleSubmit} error={error} notice={notice} />
     </AuthShell>
   );

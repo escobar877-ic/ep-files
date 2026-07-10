@@ -1,7 +1,9 @@
 # Visual asset attribution
 
-`farnese-atlas.jpg` is adapted in the EP Files interface from "Farnese Atlas" by Carlo Raso.
-The source author marked the photograph as a public-domain work on Flickr; Wikimedia Commons
-reviewed that status on 26 November 2020.
+`hermes-hero-art.webp` is the original hero artwork published for Hermes Agent by Nous Research.
+It is included in EP Files to reference the visual direction requested for this interface.
 
-Source: https://commons.wikimedia.org/wiki/File:Farnese_Atlas.jpg
+- Asset source: https://hermes-agent.nousresearch.com/img/desktop/hero-art.webp
+- Project source: https://github.com/NousResearch/hermes-agent
+- License: MIT, Copyright (c) 2025 Nous Research
+- License text: https://github.com/NousResearch/hermes-agent/blob/main/LICENSE

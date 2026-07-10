@@ -9,10 +9,9 @@ import {
   HomeFooter,
   HomeHeader,
   HomeHero,
-  QuickActionsPanel,
-  RecentFilesPanel,
-  StorageStatsPanel,
 } from '../components/home/HomeSections';
+import AuthenticatedWorkspace from '../components/home/AuthenticatedWorkspace';
+import LoadingScreen from '../components/LoadingScreen';
 
 function formatFileSize(bytes) {
   if (!bytes || bytes === 0) return '0 Б';
@@ -101,7 +100,7 @@ function useHomePageData(user) {
 }
 
 export default function HomePage() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const homeData = useHomePageData(user);
   const handleQuickUploadClick = () => document.getElementById('home-quick-upload-input')?.click();
@@ -112,27 +111,41 @@ export default function HomePage() {
     event.target.value = '';
   };
 
+  if (authLoading) return <LoadingScreen />;
+
+  if (user) {
+    return (
+      <Box className="ep-page" sx={{ minHeight: '100vh', backgroundColor: '#f4f2ec' }}>
+        <input id="home-quick-upload-input" type="file" style={{ display: 'none' }} onChange={handleQuickUploadChange} />
+        <HomeHeader user={user} />
+        <AuthenticatedWorkspace
+          user={user}
+          stats={homeData.storageStats}
+          files={homeData.recentFiles}
+          loading={homeData.loading}
+          uploadError={homeData.uploadError}
+          onClearError={() => homeData.setUploadError('')}
+          onFileDropped={homeData.processQuickUpload}
+          isUploading={homeData.isQuickUploading}
+          uploadProgress={homeData.quickUploadProgress}
+          onUploadClick={handleQuickUploadClick}
+          onOpenFiles={() => navigate('/file-manager')}
+          formatFileSize={formatFileSize}
+          formatDate={formatDate}
+        />
+      </Box>
+    );
+  }
+
   return (
     <Box className="ep-page" sx={{ minHeight: '100vh', backgroundColor: '#0000f2' }}>
       <input id="home-quick-upload-input" type="file" style={{ display: 'none' }} onChange={handleQuickUploadChange} />
-      <HomeHeader user={user} />
-      <HomeHero user={user} />
+      <HomeHeader />
+      <HomeHero />
       <Box sx={{ backgroundColor: '#f4f2ec', py: { xs: 2.5, md: 5 } }}>
-      <Container className="ep-stagger" maxWidth="xl" sx={{ px: { xs: 1.5, sm: 3 } }}>
-        {user && <StorageStatsPanel stats={homeData.storageStats} formatFileSize={formatFileSize} isUploading={homeData.isQuickUploading} onUploadClick={handleQuickUploadClick} />}
-        {!user && <GuestCta />}
-        {user && (
-          <QuickActionsPanel
-            uploadError={homeData.uploadError}
-            onClearError={() => homeData.setUploadError('')}
-            onFileDropped={homeData.processQuickUpload}
-            isUploading={homeData.isQuickUploading}
-            uploadProgress={homeData.quickUploadProgress}
-            onUploadClick={handleQuickUploadClick}
-          />
-        )}
-        {user && <RecentFilesPanel files={homeData.recentFiles} loading={homeData.loading} formatFileSize={formatFileSize} formatDate={formatDate} onOpen={() => navigate('/file-manager')} />}
-      </Container>
+        <Container className="ep-stagger" maxWidth="xl" sx={{ px: { xs: 1.5, sm: 3 } }}>
+          <GuestCta />
+        </Container>
       </Box>
       <HomeFooter />
     </Box>

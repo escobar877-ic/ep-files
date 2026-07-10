@@ -68,7 +68,7 @@ export default function Register() {
     try {
       setError('');
       await registerUser(data.name, data.email, data.password);
-      navigate('/files');
+      navigate('/file-manager', { replace: true });
     } catch (err) {
       setError(getRegisterErrorMessage(err));
     }

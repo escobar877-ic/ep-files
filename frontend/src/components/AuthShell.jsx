@@ -15,7 +15,7 @@ export default function AuthShell({ eyebrow, title, subtitle, children }) {
           </Typography>
           <Typography sx={{ color: 'rgba(248,247,242,0.72)', maxWidth: 540, mt: 3, fontSize: '0.82rem' }}>{subtitle}</Typography>
           <Box sx={{ display: { xs: 'none', md: 'block' }, height: 220, mt: 4, overflow: 'hidden', border: '1px solid rgba(248,247,242,0.45)' }}>
-            <Box component="img" className="ep-atlas-image" src="/assets/farnese-atlas.jpg" alt="Атлас" sx={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: '50% 22%', opacity: 0.72 }} />
+            <Box component="img" className="ep-hermes-art" src="/assets/hermes-hero-art.webp" alt="" sx={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: '50% 48%', transform: 'scale(1.45)' }} />
           </Box>
         </Box>
         <Paper className="ep-scale-in" sx={{ bgcolor: '#fffefa', color: '#0000f2', border: '1px solid #0000f2', p: { xs: 2.5, sm: 4, md: 5 } }}>

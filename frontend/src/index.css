@@ -105,11 +105,6 @@ html {
   background: #0000b8;
 }
 
-.ep-atlas-image {
-  filter: grayscale(1) contrast(1.75) brightness(1.55);
-  mix-blend-mode: screen;
-}
-
 .ep-display {
   font-family: 'Bodoni Moda', 'Bodoni 72', Didot, 'Times New Roman', serif !important;
   font-weight: 400 !important;
@@ -121,35 +116,12 @@ html {
   letter-spacing: 0 !important;
 }
 
-.ep-atlas-frame {
+.ep-hermes-frame {
   isolation: isolate;
 }
 
-.ep-atlas-frame::after {
-  content: '';
-  position: absolute;
-  inset: 8% 3% 2% 12%;
-  border: 1px solid rgba(248, 247, 242, 0.55);
+.ep-hermes-art {
+  image-rendering: auto;
   pointer-events: none;
-  z-index: -1;
-  transform: translate(18px, 18px);
-}
-
-.ep-art-ring {
-  position: absolute;
-  border: 1px solid rgba(248, 247, 242, 0.6);
-  border-radius: 50%;
-  pointer-events: none;
-}
-
-.ep-feature-image {
-  filter: grayscale(1) contrast(1.8) sepia(0.1);
-  mix-blend-mode: multiply;
-}
-
-@media (max-width: 700px) {
-  .ep-atlas-frame::after {
-    inset: 6% 0 0 8%;
-    transform: translate(10px, 10px);
-  }
+  user-select: none;
 }
