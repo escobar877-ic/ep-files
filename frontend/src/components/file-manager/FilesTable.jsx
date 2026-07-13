@@ -1,11 +1,6 @@
 import { Paper } from '@mui/material';
 import FileRow from './FileRow';
-import { Description, Folder } from '@mui/icons-material';
-
-function FileVisual({ file, size = 32 }) {
-  if (file.type === 'folder') return <Folder sx={{ fontSize: size, color: 'secondary.main' }} />;
-  return <Description sx={{ fontSize: size, color: 'primary.main' }} />;
-}
+import FileTypeIcon from '../FileTypeIcon';
 
 function formatFileSize(bytes) {
   if (!bytes) return '';
@@ -25,7 +20,7 @@ export default function FilesTable({ files = [], ...handlers }) {
         <FileRow
           key={`${file.type || 'file'}-${file.id}`}
           file={file}
-          getFileIcon={(item, size) => <FileVisual file={item} size={size} />}
+          getFileIcon={(item, size) => <FileTypeIcon file={item} size={size} />}
           formatFileSize={formatFileSize}
           formatDate={formatDate}
           {...handlers}

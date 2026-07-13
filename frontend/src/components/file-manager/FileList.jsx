@@ -1,38 +1,14 @@
 import { useState } from 'react';
 import { Box, IconButton, Paper, Tooltip, Typography } from '@mui/material';
-import {
-  Description,
-  Download as DownloadIcon,
-  Edit,
-  Folder,
-  Image,
-  MoreVert,
-  Movie,
-  MusicNote,
-  PictureAsPdf,
-  Slideshow,
-  Star,
-  TableChart,
-} from '@mui/icons-material';
+import { Download as DownloadIcon, Edit, MoreVert, Star } from '@mui/icons-material';
+import FileTypeIcon from '../FileTypeIcon';
+import { getFileExtension } from '../fileTypeConfig';
 import FileRow from './FileRow';
 import { getDraggedManagerItem, hasDraggedManagerItem, hasDraggedSystemFiles, setDraggedManagerItem } from './dragDrop';
 
-const fileGroups = [
-  { extensions: ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp', 'svg'], icon: Image, color: '#0000f2', bg: 'rgba(0, 0, 242, 0.08)' },
-  { extensions: ['mp4', 'webm', 'ogv', 'mov', 'm4v', 'mpeg', 'mpg', 'avi'], icon: Movie, color: '#0000f2', bg: 'rgba(237, 255, 69, 0.5)' },
-  { extensions: ['mp3', 'wav', 'ogg', 'oga', 'm4a', 'aac', 'flac'], icon: MusicNote, color: '#0000f2', bg: 'rgba(0, 0, 242, 0.08)' },
-  { extensions: ['pdf'], icon: PictureAsPdf, color: '#c62828', bg: 'rgba(198, 40, 40, 0.08)' },
-  { extensions: ['xlsx', 'xls', 'csv'], icon: TableChart, color: '#0000f2', bg: 'rgba(237, 255, 69, 0.5)' },
-  { extensions: ['ppt', 'pptx', 'pptm', 'potx', 'potm', 'ppsx', 'ppsm'], icon: Slideshow, color: '#0000f2', bg: 'rgba(0, 0, 242, 0.08)' },
-];
-
-function getExtension(file) {
-  return file?.name?.split('.')?.pop()?.toLowerCase() || '';
-}
-
 function isEditableTextFile(file) {
   if (file?.can_write === false) return false;
-  return file?.type === 'file' && ['txt', 'md', 'json', 'csv', 'log', 'xml', 'html', 'js', 'py'].includes(getExtension(file));
+  return file?.type === 'file' && ['txt', 'md', 'json', 'csv', 'log', 'xml', 'html', 'js', 'py'].includes(getFileExtension(file));
 }
 
 function formatFileSize(bytes) {
@@ -46,20 +22,6 @@ function formatDate(dateString) {
   return new Date(dateString).toLocaleDateString('ru-RU', {
     day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
   });
-}
-
-function FileVisual({ file, size = 32 }) {
-  if (file.type === 'folder') return <Folder sx={{ fontSize: size, color: 'secondary.main' }} />;
-  const group = fileGroups.find((item) => item.extensions.includes(getExtension(file)));
-  const Icon = group?.icon || Description;
-  const bg = group?.bg || 'rgba(0, 0, 242, 0.08)';
-  const color = group?.color || '#0000f2';
-  const usesBrandColor = color === '#0000f2';
-  return (
-    <Box sx={{ width: size, height: size, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, backgroundColor: (theme) => (usesBrandColor && theme.palette.mode === 'dark' ? theme.ep.subtle : bg), border: '1px solid', borderColor: 'divider' }}>
-      <Icon sx={{ fontSize: Math.round(size * 0.7), color: usesBrandColor ? 'primary.main' : color }} />
-    </Box>
-  );
 }
 
 function canReportFile(file, currentUserEmail) {
@@ -113,7 +75,7 @@ function GridCard({ file, handlers }) {
   return (
     <Paper elevation={0} draggable={isDraggableFile} onDragStart={(event) => setDraggedManagerItem(event, file)} onClick={open} onContextMenu={openContextMenu} onDragOver={handleDragOver} onDragLeave={() => setIsDragOver(false)} onDrop={handleDropOnCard} sx={{ p: 2, minHeight: 148, border: '1px solid', borderColor: isDragOver ? 'secondary.main' : 'divider', position: 'relative', cursor: isDraggableFile ? 'grab' : 'pointer', backgroundColor: (theme) => (isDragOver ? 'rgba(237,255,69,0.18)' : theme.ep.panel), transition: 'background-color 150ms ease, border-color 150ms ease', '&:hover': { backgroundColor: (theme) => theme.palette.mode === 'dark' ? theme.ep.hover : 'rgba(0,0,242,0.045)', borderColor: 'primary.main', '& .grid-menu-btn,.download-btn,.favorite-btn,.edit-btn': { opacity: 1 } }, '&:active': { cursor: isDraggableFile ? 'grabbing' : 'pointer' } }}>
       {isFolder ? <FolderActions folder={file} handlers={handlers} /> : <GridActionButtons file={file} {...handlers} />}
-      <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}><FileVisual file={file} size={44} /></Box>
+      <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}><FileTypeIcon file={file} size={48} /></Box>
       <Typography variant="subtitle2" sx={{ fontWeight: 500, mb: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', pr: { xs: 0, sm: 6 } }}>{file.name}</Typography>
       {uploaderText && <Tooltip title={uploaderText}><Typography variant="caption" sx={{ display: 'block', color: 'text.secondary', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', mb: 0.5 }}>{uploaderText}</Typography></Tooltip>}
       <Typography variant="caption" color="text.secondary">{formatDate(file.created_at || file.updated_at || file.date || new Date().toISOString())}{file.size && ` • ${formatFileSize(file.size)}`}</Typography>
@@ -156,7 +118,7 @@ export default function FileList({ files, viewMode, onFileDropped, ...handlers }
         </Box>
       ) : (
         <Paper elevation={0} sx={{ border: '1px solid', borderColor: 'divider', overflow: 'hidden', backgroundColor: (theme) => theme.ep.panel }}>
-          {files.map((file) => <FileRow key={`${file.type}-${file.id}`} file={file} getFileIcon={(item, size) => <FileVisual file={item} size={size} />} formatFileSize={formatFileSize} formatDate={formatDate} onFileDropped={onFileDropped} {...handlers} />)}
+          {files.map((file) => <FileRow key={`${file.type}-${file.id}`} file={file} getFileIcon={(item, size) => <FileTypeIcon file={item} size={size} />} formatFileSize={formatFileSize} formatDate={formatDate} onFileDropped={onFileDropped} {...handlers} />)}
         </Paper>
       )}
     </Box>

@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Alert, Box, Button, CircularProgress, Container, Dialog, DialogActions, DialogContent, DialogTitle, List, ListItem, ListItemText, Paper, TextField, Typography } from '@mui/material';
-import { AccountCircle, Download, Folder, InsertDriveFile, ReportProblem } from '@mui/icons-material';
+import { AccountCircle, Download, Folder, ReportProblem } from '@mui/icons-material';
 import api from '../api/axios';
 import BrandWordmark from '../components/BrandWordmark';
+import FileTypeIcon from '../components/FileTypeIcon';
 
 const previewGroups = {
   image: ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp', 'svg'],
@@ -187,7 +188,7 @@ function PublicFolderPage({ token }) {
         <List disablePadding sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, overflow: 'hidden', backgroundColor: 'background.paper' }}>
           {folders.map((folder) => (
             <ListItem key={`folder-${folder.id}`} sx={{ borderBottom: '1px solid', borderColor: 'divider' }}>
-              <Folder sx={{ mr: 1.5, color: '#d08a22' }} />
+              <Box sx={{ mr: 1.5, display: 'flex' }}><FileTypeIcon file={{ ...folder, type: 'folder' }} size={38} /></Box>
               <ListItemText primary={folder.name} secondary="Папка" />
             </ListItem>
           ))}
@@ -197,7 +198,7 @@ function PublicFolderPage({ token }) {
               secondaryAction={<Button href={file.download_url} startIcon={<Download />}>Скачать</Button>}
               sx={{ borderBottom: '1px solid', borderColor: 'divider', '&:last-child': { borderBottom: 0 } }}
             >
-              <InsertDriveFile sx={{ mr: 1.5, color: '#5274a3' }} />
+              <Box sx={{ mr: 1.5, display: 'flex' }}><FileTypeIcon file={{ ...file, type: 'file' }} size={38} /></Box>
               <ListItemText primary={file.name} secondary={formatFileSize(file.size)} />
             </ListItem>
           ))}

@@ -21,6 +21,7 @@ import {
   Storage,
 } from '@mui/icons-material';
 import FilesPageUploader from '../upload/FilesPageUploader';
+import FileTypeIcon from '../FileTypeIcon';
 
 function formatFileCount(count) {
   const value = Number(count) || 0;
@@ -108,7 +109,7 @@ function RecentFiles({ files, loading, formatFileSize, formatDate, onOpen, onUpl
               <Typography variant="overline" sx={{ width: 34, flexShrink: 0, color: 'text.secondary' }}>
                 {String(index + 1).padStart(2, '0')}
               </Typography>
-              <ListItemIcon sx={{ minWidth: 42, color: 'primary.main' }}><InsertDriveFile /></ListItemIcon>
+              <ListItemIcon sx={{ minWidth: 50 }}><FileTypeIcon file={{ ...file, type: 'file' }} size={34} /></ListItemIcon>
               <ListItemText
                 primary={file.name}
                 secondary={`${formatFileSize(file.size)} / ${formatDate(file.updated_at || file.created_at || file.date)}`}

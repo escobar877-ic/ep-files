@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Alert, Avatar, Box, Button, CircularProgress, Collapse, Container, IconButton, Paper, TextField, Tooltip, Typography } from '@mui/material';
-import { Close, DarkMode, DeleteOutline, Description, Download as DownloadIcon, ExpandMore, Folder, Image, LightMode, LockReset, Logout, Movie, MusicNote, PhotoCamera, PictureAsPdf, RestoreFromTrash, Shield, Slideshow, Star, Storage, TableChart, Visibility } from '@mui/icons-material';
+import { Close, DarkMode, DeleteOutline, Download as DownloadIcon, ExpandMore, Folder, LightMode, LockReset, Logout, PhotoCamera, RestoreFromTrash, Shield, Star, Storage, Visibility } from '@mui/icons-material';
 import api from '../api/axios';
 import { useAuth } from '../context/authContextValue';
 import { useThemeMode } from '../themeMode';
 import { getApiErrorMessage } from './file-manager/fileManagerHelpers';
 import TaskStatusItem from '../components/TaskStatusItem';
 import BrandWordmark from '../components/BrandWordmark';
+import FileTypeIcon from '../components/FileTypeIcon';
+import { getFileExtension } from '../components/fileTypeConfig';
 
 function formatFileSize(bytes) {
   if (!bytes || bytes === 0) return '0 Б';
@@ -15,15 +17,6 @@ function formatFileSize(bytes) {
   const index = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), sizes.length - 1);
   return `${parseFloat((bytes / (1024 ** index)).toFixed(1))} ${sizes[index]}`;
 }
-
-const fileGroups = [
-  { extensions: ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp', 'svg'], icon: Image, color: '#0000f2', bg: 'rgba(0,0,242,0.08)' },
-  { extensions: ['mp4', 'webm', 'ogv', 'mov', 'm4v', 'mpeg', 'mpg', 'avi'], icon: Movie, color: '#0000f2', bg: 'rgba(237,255,69,0.5)' },
-  { extensions: ['mp3', 'wav', 'ogg', 'oga', 'm4a', 'aac', 'flac'], icon: MusicNote, color: '#0000f2', bg: 'rgba(0,0,242,0.08)' },
-  { extensions: ['pdf'], icon: PictureAsPdf, color: '#fb7185', bg: 'rgba(251, 113, 133, 0.13)' },
-  { extensions: ['xlsx', 'xls', 'csv'], icon: TableChart, color: '#0000f2', bg: 'rgba(237,255,69,0.5)' },
-  { extensions: ['ppt', 'pptx', 'pptm', 'potx', 'potm', 'ppsx', 'ppsm'], icon: Slideshow, color: '#0000f2', bg: 'rgba(0,0,242,0.08)' },
-];
 
 const panelSx = {
   backgroundColor: (theme) => theme.ep.panel,
@@ -34,32 +27,13 @@ const panelSx = {
   '&:hover': { borderColor: 'primary.main' },
 };
 
-function getExtension(item) {
-  return item?.name?.split('.')?.pop()?.toLowerCase() || '';
-}
-
 function canPreview(item) {
   return item?.type === 'file';
 }
 
-function FavoriteFileIcon({ item, size = 48 }) {
-  const group = item.type === 'folder'
-    ? { icon: Folder, color: '#f4b95f', bg: 'rgba(244, 185, 95, 0.13)' }
-    : fileGroups.find((fileGroup) => fileGroup.extensions.includes(getExtension(item)));
-  const Icon = group?.icon || Description;
-  const bg = group?.bg || 'rgba(0,0,242,0.08)';
-  const color = group?.color || '#0000f2';
-  const usesBrandColor = color === '#0000f2';
-  return (
-    <Box sx={{ width: size, height: size, borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, backgroundColor: (theme) => (usesBrandColor && theme.palette.mode === 'dark' ? theme.ep.subtle : bg), border: '1px solid', borderColor: 'divider' }}>
-      <Icon sx={{ fontSize: Math.round(size * 0.7), color: usesBrandColor ? 'primary.main' : color }} />
-    </Box>
-  );
-}
-
 function FavoriteMeta({ item }) {
   if (item.type === 'folder') return 'Папка';
-  const extension = getExtension(item);
+  const extension = getFileExtension(item);
   const label = extension ? extension.toUpperCase() : 'Файл';
   return `${label} · ${formatFileSize(item.size)}`;
 }
@@ -182,7 +156,7 @@ function FavoriteCard({ item, onDownload, onPreview }) {
           },
         }}
       >
-        <FavoriteFileIcon item={item} />
+        <FileTypeIcon file={item} size={48} />
         <Box sx={{ minWidth: 0 }}>
           <Typography variant="body2" sx={{ fontWeight: 700, color: 'text.primary', lineHeight: 1.35, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {item.name}

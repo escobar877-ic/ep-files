@@ -26,8 +26,6 @@ import {
   ChevronRight,
   DeleteForever,
   DeleteSweep,
-  Description,
-  Folder,
   FolderOff,
   RestoreFromTrash,
 } from '@mui/icons-material';
@@ -35,6 +33,7 @@ import { alpha } from '@mui/material/styles';
 import api from '../api/axios';
 import HeaderProfileButton from '../components/HeaderProfileButton';
 import BrandWordmark from '../components/BrandWordmark';
+import FileTypeIcon from '../components/FileTypeIcon';
 import { useAuth } from '../context/authContextValue';
 
 function formatFileSize(bytes) {
@@ -200,7 +199,6 @@ function TrashTable({ items, busyId, onOpenFolder, onRestore, onDelete }) {
             const rowKey = `${item.type}-${item.id}`;
             const isBusy = busyId === rowKey;
             const isFolder = item.type === 'folder';
-            const Icon = isFolder ? Folder : Description;
             return (
               <TableRow
                 key={rowKey}
@@ -210,20 +208,7 @@ function TrashTable({ items, busyId, onOpenFolder, onRestore, onDelete }) {
               >
                 <TableCell>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, minWidth: 0 }}>
-                    <Box
-                      sx={{
-                        width: 38,
-                        height: 38,
-                        borderRadius: '8px',
-                        bgcolor: (theme) => alpha(theme.palette.primary.main, isFolder ? 0.14 : 0.1),
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flexShrink: 0,
-                      }}
-                    >
-                      <Icon sx={{ color: 'primary.main' }} />
-                    </Box>
+                    <FileTypeIcon file={item} size={38} />
                     <Typography sx={{ fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {item.name}
                     </Typography>
