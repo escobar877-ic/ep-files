@@ -20,7 +20,7 @@ export default function FilesPageUploader({ onFileDropped, isUploading = false, 
     event.target.value = '';
   };
   return (
-    <Paper onClick={openFileDialog} onDragEnter={markDragging} onDragOver={markDragging} onDragLeave={(event) => { stopDrag(event); setIsDragging(false); }} onDrop={handleDrop} sx={{ p: compact ? { xs: 2.5, sm: 3 } : { xs: 3, sm: 5 }, mb: compact ? 0 : 3, textAlign: 'center', cursor: isUploading ? 'default' : 'pointer', border: '1px dashed', borderColor: isDragging ? 'secondary.main' : 'primary.main', backgroundColor: isDragging ? 'rgba(237,255,69,0.2)' : 'transparent' }}>
+    <Paper onClick={openFileDialog} onDragEnter={markDragging} onDragOver={markDragging} onDragLeave={(event) => { stopDrag(event); setIsDragging(false); }} onDrop={handleDrop} sx={{ p: compact ? { xs: 2.5, sm: 3 } : { xs: 3, sm: 5 }, mb: compact ? 0 : 3, textAlign: 'center', cursor: isUploading ? 'default' : 'pointer', border: '1px dashed', borderColor: 'primary.main', backgroundColor: (theme) => isDragging ? theme.ep.selected : 'transparent' }}>
       <input ref={fileInputRef} type="file" style={{ display: 'none' }} onChange={handleFileChange} />
       <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
         <CloudUpload sx={{ fontSize: compact ? 34 : { xs: 36, sm: 44 }, color: 'primary.main' }} />

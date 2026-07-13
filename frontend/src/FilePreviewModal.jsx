@@ -1191,10 +1191,10 @@ export default function FilePreviewModal({ file, onClose }) {
   };
   const downloadButtonCurrentStyle = {
     ...downloadButtonStyle,
-    background: theme.ep.blue,
-    borderColor: theme.ep.blue,
-    color: theme.ep.onBlue,
-    ...(hoveredButton === 'download' && !downloading ? { background: theme.ep.acid, borderColor: theme.ep.blue, color: theme.ep.blue } : {}),
+    background: theme.palette.mode === 'dark' ? theme.ep.warm : theme.ep.blue,
+    borderColor: theme.palette.mode === 'dark' ? theme.ep.warm : theme.ep.blue,
+    color: theme.palette.mode === 'dark' ? theme.ep.blue : theme.ep.onBlue,
+    ...(hoveredButton === 'download' && !downloading ? { background: theme.palette.mode === 'dark' ? theme.ep.warmMuted : theme.ep.acid, borderColor: theme.ep.blue, color: theme.ep.blue } : {}),
     ...(downloading ? { cursor: 'not-allowed', opacity: 0.68, transform: 'none' } : {}),
   };
 

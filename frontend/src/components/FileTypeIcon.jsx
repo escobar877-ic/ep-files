@@ -28,15 +28,15 @@ export default function FileTypeIcon({ file, size = 40 }) {
         overflow: 'hidden',
         flexShrink: 0,
         border: '1px solid',
-        borderColor: (theme) => theme.palette.mode === 'dark' ? alpha(definition.accent, 0.72) : alpha('#0000f2', 0.42),
-        backgroundColor: (theme) => alpha(definition.accent, theme.palette.mode === 'dark' ? 0.13 : 0.22),
-        color: (theme) => theme.palette.mode === 'dark' ? '#f8f7f2' : '#0000f2',
+        borderColor: (theme) => theme.palette.mode === 'dark' ? alpha(definition.accent, 0.48) : alpha('#0000f2', 0.42),
+        backgroundColor: (theme) => alpha(definition.accent, theme.palette.mode === 'dark' ? 0.1 : 0.22),
+        color: (theme) => theme.palette.mode === 'dark' ? theme.ep.warm : '#0000f2',
       }}
     >
       <Box
         component="span"
         aria-hidden="true"
-        sx={{ position: 'absolute', inset: '0 0 auto', height: Math.max(3, Math.round(size * 0.09)), backgroundColor: definition.accent }}
+        sx={{ position: 'absolute', inset: '0 0 auto', height: Math.max(3, Math.round(size * 0.09)), backgroundColor: (theme) => theme.palette.mode === 'dark' ? alpha(definition.accent, 0.62) : definition.accent }}
       />
       <Icon aria-hidden="true" sx={{ fontSize: Math.round(size * 0.46), transform: `translateY(-${Math.max(1, Math.round(size * 0.05))}px)` }} />
       <Box

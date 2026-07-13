@@ -153,7 +153,7 @@ function EmptyState({ onFileDropped }) {
     if (droppedFiles.length > 0) onFileDropped?.(droppedFiles);
   };
   return (
-    <Box onDragOver={(e) => { stop(e); setIsDragActive(true); }} onDragLeave={(e) => { stop(e); setIsDragActive(false); }} onDrop={handleDrop} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: { xs: 7, sm: 12 }, px: 2, textAlign: 'center', border: '1px dashed', borderColor: isDragActive ? 'secondary.main' : 'divider', backgroundColor: isDragActive ? 'rgba(237,255,69,0.18)' : 'transparent', transition: 'background-color 160ms ease, border-color 160ms ease' }}>
+    <Box onDragOver={(e) => { stop(e); setIsDragActive(true); }} onDragLeave={(e) => { stop(e); setIsDragActive(false); }} onDrop={handleDrop} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: { xs: 7, sm: 12 }, px: 2, textAlign: 'center', border: '1px dashed', borderColor: isDragActive ? 'primary.main' : 'divider', backgroundColor: (theme) => isDragActive ? theme.ep.selected : 'transparent', transition: 'background-color 160ms ease, border-color 160ms ease' }}>
       <Box sx={{ width: { xs: 76, sm: 96 }, height: { xs: 76, sm: 96 }, border: '1px solid', borderColor: 'primary.main', display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 3, mx: 'auto', animation: 'epSoftPulse 2.8s ease-in-out infinite' }}>
         <CloudUpload sx={{ fontSize: { xs: 38, sm: 48 }, color: 'primary.main', margin: 'auto' }} />
       </Box>
@@ -166,11 +166,11 @@ function EmptyState({ onFileDropped }) {
 function CreateFab({ tasks, anchorEl, onCreateClick }) {
   const isOpen = Boolean(anchorEl);
   return (
-    <Box sx={{ position: 'fixed', bottom: { xs: tasks.length > 0 ? 96 : 20, sm: tasks.length > 0 ? 116 : 48 }, right: { xs: 20, sm: 48 }, zIndex: 1100, transition: 'bottom 0.3s ease' }}>
+    <Box sx={{ position: 'fixed', bottom: { xs: tasks.length > 0 ? 96 : 20, sm: tasks.length > 0 ? 108 : 32 }, right: { xs: 20, sm: 32 }, zIndex: 1100, transition: 'bottom 0.3s ease' }}>
       <Tooltip title="Создать или загрузить" placement="left">
-        <Fab variant="extended" onClick={onCreateClick} sx={{ backgroundColor: (theme) => theme.palette.mode === 'dark' ? theme.ep.acid : theme.ep.blue, color: (theme) => theme.palette.mode === 'dark' ? theme.ep.blue : theme.ep.onBlue, border: '1px solid', borderColor: (theme) => theme.palette.mode === 'dark' ? theme.ep.acid : theme.ep.onBlue, px: { xs: 2.25, sm: 4 }, py: { xs: 2.25, sm: 3.5 }, minWidth: { xs: 56, sm: 64 }, gap: { xs: 0, sm: 1.5 }, '&:hover': { backgroundColor: (theme) => theme.palette.mode === 'dark' ? theme.ep.primary : theme.ep.acid, color: '#0000f2', borderColor: (theme) => theme.palette.mode === 'dark' ? theme.ep.primary : theme.ep.blue } }}>
-          <Add sx={{ transform: isOpen ? 'rotate(135deg)' : 'rotate(0deg)', transition: 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)', fontSize: { xs: '1.6rem', sm: '1.8rem' } }} />
-          <Typography variant="button" sx={{ display: { xs: 'none', sm: 'block' }, fontWeight: 800, letterSpacing: 0, fontSize: '1.05rem' }}>Создать</Typography>
+        <Fab variant="extended" onClick={onCreateClick} sx={{ width: { xs: 56, sm: 220 }, height: 56, minHeight: 56, backgroundColor: (theme) => theme.palette.mode === 'dark' ? theme.ep.warm : theme.ep.blue, color: (theme) => theme.palette.mode === 'dark' ? theme.ep.blue : theme.ep.onBlue, border: '1px solid', borderColor: (theme) => theme.palette.mode === 'dark' ? theme.ep.warm : theme.ep.onBlue, px: { xs: 0, sm: 2.5 }, gap: { xs: 0, sm: 1.25 }, justifyContent: 'center', '&:hover': { backgroundColor: (theme) => theme.palette.mode === 'dark' ? theme.ep.warmMuted : theme.ep.acid, color: '#0000f2', borderColor: (theme) => theme.palette.mode === 'dark' ? theme.ep.warmMuted : theme.ep.blue } }}>
+          <Add sx={{ transform: isOpen ? 'rotate(135deg)' : 'rotate(0deg)', transition: 'transform 0.2s ease', fontSize: '1.55rem' }} />
+          <Typography variant="button" sx={{ display: { xs: 'none', sm: 'block' }, fontWeight: 800, fontSize: '0.88rem' }}>Создать</Typography>
         </Fab>
       </Tooltip>
     </Box>
@@ -179,10 +179,16 @@ function CreateFab({ tasks, anchorEl, onCreateClick }) {
 
 function CreateMenu({ anchorEl, onClose, onCreateFolder, onUpload }) {
   return (
-    <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={onClose} anchorOrigin={{ vertical: 'top', horizontal: 'center' }} transformOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
-      <MenuItem onClick={onCreateFolder}><FolderIcon sx={{ color: 'primary.main', mr: 1.5, fontSize: 20 }} /> Папка</MenuItem>
-      <Divider sx={{ my: 0.5 }} />
-      <MenuItem onClick={onUpload}><Upload sx={{ color: 'primary.main', mr: 1.5, fontSize: 20 }} /> Загрузить файл</MenuItem>
+    <Menu
+      anchorEl={anchorEl}
+      open={Boolean(anchorEl)}
+      onClose={onClose}
+      anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+      transformOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      slotProps={{ paper: { sx: { width: 220, mb: 1, borderColor: 'divider' } } }}
+    >
+      <MenuItem onClick={onCreateFolder} sx={{ minHeight: 56, px: 2, gap: 1.5 }}><FolderIcon sx={{ color: 'primary.main', fontSize: 21 }} /><Typography variant="button" sx={{ textTransform: 'none' }}>Новая папка</Typography></MenuItem>
+      <MenuItem onClick={onUpload} sx={{ minHeight: 56, px: 2, gap: 1.5 }}><Upload sx={{ color: 'primary.main', fontSize: 21 }} /><Typography variant="button" sx={{ textTransform: 'none' }}>Загрузить файл</Typography></MenuItem>
     </Menu>
   );
 }
