@@ -30,7 +30,7 @@ function EditorTitle({ file, loading, saving, onCancel }) {
 
 function LineGutter({ lines, gutterRef }) {
   return (
-    <Box ref={gutterRef} sx={{ width: 48, backgroundColor: '#f5f7fa', borderRadius: '6px', px: 1, py: 1, overflow: 'auto', textAlign: 'right', color: '#9e9e9e', fontFamily: 'monospace', fontSize: '0.85rem', lineHeight: '1.5', userSelect: 'none' }}>
+    <Box ref={gutterRef} sx={{ width: 48, backgroundColor: (theme) => theme.ep.inset, borderRight: '1px solid', borderColor: 'divider', px: 1, py: 1, overflow: 'auto', textAlign: 'right', color: (theme) => theme.ep.muted, fontFamily: 'monospace', fontSize: '0.85rem', lineHeight: '1.5', userSelect: 'none' }}>
       {Array.from({ length: Math.max(1, lines) }).map((_, index) => <div key={index} style={{ height: '1.5rem' }}>{index + 1}</div>)}
     </Box>
   );

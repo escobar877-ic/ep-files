@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { CssBaseline, ThemeProvider } from '@mui/material';
-import { alpha, createTheme } from '@mui/material/styles';
+import { createTheme } from '@mui/material/styles';
 import { ThemeModeContext } from './themeMode';
 
 const THEME_STORAGE_KEY = 'ep_theme_mode';
@@ -15,25 +15,31 @@ function modeTokens(mode) {
     blue: HERMES_BLUE,
     acid: ACID,
     onBlue: '#f8f7f2',
-    primary: dark ? '#f8f7f2' : HERMES_BLUE,
-    primaryLight: dark ? '#ffffff' : '#3939ff',
-    primaryDark: dark ? '#d9d7cf' : '#0000b8',
+    primary: dark ? '#aab1ff' : HERMES_BLUE,
+    primaryLight: dark ? '#d0d4ff' : '#3939ff',
+    primaryDark: dark ? '#737dff' : '#0000b8',
+    primaryContrast: dark ? '#090a10' : '#f8f7f2',
     secondary: dark ? ACID : '#c7d600',
     secondaryLight: '#f4ff86',
     secondaryDark: '#aebc00',
-    page: dark ? '#0b0b10' : PAPER,
-    paper: dark ? '#111117' : '#fffefa',
-    elevated: dark ? '#17171f' : '#fffefa',
-    header: HERMES_BLUE,
-    panel: dark ? '#111117' : '#fffefa',
-    subtle: dark ? 'rgba(248,247,242,0.065)' : 'rgba(0,0,242,0.055)',
-    hover: dark ? 'rgba(237,255,69,0.1)' : 'rgba(0,0,242,0.085)',
-    line: dark ? 'rgba(248,247,242,0.34)' : 'rgba(0,0,242,0.3)',
-    text: dark ? '#f8f7f2' : '#0000c8',
-    textSecondary: dark ? 'rgba(248,247,242,0.72)' : '#4d4db0',
-    shadow: 'none',
-    menuShadow: dark ? '0 0 0 1px rgba(248,247,242,0.5)' : '0 0 0 1px rgba(0,0,242,0.35)',
-    pageGradient: dark ? '#0b0b10' : PAPER,
+    page: dark ? '#08090e' : PAPER,
+    paper: dark ? '#10121a' : '#fffefa',
+    elevated: dark ? '#171a24' : '#fffefa',
+    inset: dark ? '#0c0e15' : '#f8f7f2',
+    header: dark ? '#090994' : HERMES_BLUE,
+    headerLine: dark ? 'rgba(237,255,69,0.38)' : 'rgba(248,247,242,0.42)',
+    panel: dark ? '#11131b' : '#fffefa',
+    subtle: dark ? 'rgba(170,177,255,0.09)' : 'rgba(0,0,242,0.055)',
+    selected: dark ? 'rgba(170,177,255,0.16)' : 'rgba(0,0,242,0.1)',
+    hover: dark ? 'rgba(237,255,69,0.075)' : 'rgba(0,0,242,0.085)',
+    line: dark ? 'rgba(170,177,255,0.24)' : 'rgba(0,0,242,0.3)',
+    lineStrong: dark ? 'rgba(170,177,255,0.46)' : 'rgba(0,0,242,0.48)',
+    text: dark ? '#f2f1ec' : '#0000c8',
+    textSecondary: dark ? '#a6a8b8' : '#4d4db0',
+    muted: dark ? '#777a8e' : '#6565aa',
+    shadow: dark ? '0 16px 40px rgba(0,0,0,0.28)' : 'none',
+    menuShadow: dark ? '0 18px 48px rgba(0,0,0,0.42), 0 0 0 1px rgba(170,177,255,0.22)' : '0 0 0 1px rgba(0,0,242,0.35)',
+    pageGradient: dark ? '#08090e' : PAPER,
     displayFont: "'Bodoni Moda', 'Bodoni 72', Didot, 'Times New Roman', serif",
     monoFont: "'IBM Plex Mono', 'SFMono-Regular', Consolas, 'Liberation Mono', monospace",
   };
@@ -48,7 +54,7 @@ function createAppTheme(mode) {
         main: tokens.primary,
         light: tokens.primaryLight,
         dark: tokens.primaryDark,
-        contrastText: darkContrast(mode),
+        contrastText: tokens.primaryContrast,
       },
       secondary: {
         main: tokens.secondary,
@@ -62,6 +68,12 @@ function createAppTheme(mode) {
       background: { default: tokens.page, paper: tokens.paper },
       text: { primary: tokens.text, secondary: tokens.textSecondary },
       divider: tokens.line,
+      action: {
+        hover: tokens.hover,
+        selected: tokens.selected,
+        disabled: mode === 'dark' ? '#676979' : undefined,
+        disabledBackground: mode === 'dark' ? 'rgba(170,177,255,0.07)' : undefined,
+      },
     },
     shape: { borderRadius: 0 },
     typography: {
@@ -83,10 +95,6 @@ function createAppTheme(mode) {
 
   theme.ep = tokens;
   return theme;
-}
-
-function darkContrast(mode) {
-  return mode === 'dark' ? HERMES_BLUE : '#f8f7f2';
 }
 
 function darkColor(mode, darkValue, lightValue) {
@@ -164,6 +172,7 @@ function buildComponents(tokens, mode) {
     MuiDialog: {
       styleOverrides: {
         paper: {
+          backgroundColor: tokens.elevated,
           borderRadius: 0,
           border: `1px solid ${tokens.line}`,
           boxShadow: tokens.menuShadow,
@@ -173,7 +182,7 @@ function buildComponents(tokens, mode) {
     },
     MuiMenu: {
       styleOverrides: {
-        paper: { borderRadius: 0, border: `1px solid ${tokens.line}`, boxShadow: tokens.menuShadow },
+        paper: { backgroundColor: tokens.elevated, borderRadius: 0, border: `1px solid ${tokens.line}`, boxShadow: tokens.menuShadow },
         list: { padding: 0 },
       },
     },
@@ -200,7 +209,13 @@ function buildComponents(tokens, mode) {
           transition: 'background-color 140ms ease, color 140ms ease, border-color 140ms ease',
           '&:hover': { boxShadow: 'none' },
         },
-        outlined: { borderColor: tokens.line, borderWidth: 1, '&:hover': { borderWidth: 1 } },
+        containedPrimary: {
+          backgroundColor: mode === 'dark' ? tokens.secondary : tokens.primary,
+          color: mode === 'dark' ? HERMES_BLUE : tokens.onBlue,
+          border: `1px solid ${mode === 'dark' ? tokens.secondary : tokens.primary}`,
+          '&:hover': { backgroundColor: mode === 'dark' ? tokens.primaryLight : tokens.primaryDark, color: mode === 'dark' ? tokens.primaryContrast : tokens.onBlue, borderColor: mode === 'dark' ? tokens.primaryLight : tokens.primaryDark },
+        },
+        outlined: { borderColor: tokens.lineStrong, borderWidth: 1, '&:hover': { borderWidth: 1, borderColor: tokens.primary } },
       },
     },
     MuiIconButton: {
@@ -220,27 +235,44 @@ function buildComponents(tokens, mode) {
       styleOverrides: {
         root: {
           borderRadius: 0,
-          backgroundColor: mode === 'dark' ? alpha('#ffffff', 0.045) : 'transparent',
+          backgroundColor: mode === 'dark' ? tokens.inset : 'transparent',
+          color: tokens.text,
           '& fieldset': { borderColor: tokens.line },
           '&:hover fieldset': { borderColor: tokens.primary },
           '&.Mui-focused fieldset': { borderColor: tokens.primary, borderWidth: 1 },
+          '& input::placeholder, & textarea::placeholder': { color: tokens.textSecondary, opacity: 0.8 },
+          '& input:-webkit-autofill, & input:-webkit-autofill:hover, & input:-webkit-autofill:focus': {
+            WebkitTextFillColor: tokens.text,
+            WebkitBoxShadow: `0 0 0 1000px ${mode === 'dark' ? tokens.inset : tokens.paper} inset`,
+            caretColor: tokens.text,
+          },
         },
       },
     },
+    MuiInputLabel: { styleOverrides: { root: { color: tokens.textSecondary, '&.Mui-focused': { color: tokens.primary } } } },
+    MuiFormHelperText: { styleOverrides: { root: { color: tokens.textSecondary } } },
     MuiChip: {
       styleOverrides: { root: { borderRadius: 0, fontFamily: tokens.monoFont, fontWeight: 700 } },
     },
     MuiAvatar: { styleOverrides: { root: { borderRadius: 0 } } },
     MuiLinearProgress: {
-      styleOverrides: { root: { borderRadius: 0 }, bar: { borderRadius: 0 } },
+      styleOverrides: { root: { borderRadius: 0, backgroundColor: tokens.subtle }, bar: { borderRadius: 0 } },
     },
     MuiAlert: {
       styleOverrides: { root: { borderRadius: 0, border: `1px solid ${tokens.line}` } },
     },
     MuiTableCell: {
-      styleOverrides: { root: { borderColor: tokens.line, fontFamily: tokens.monoFont } },
+      styleOverrides: {
+        root: { borderColor: tokens.line, fontFamily: tokens.monoFont },
+        head: { backgroundColor: tokens.elevated, color: tokens.textSecondary, borderBottomColor: tokens.lineStrong, fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase' },
+      },
     },
-    MuiTooltip: { defaultProps: { arrow: true } },
+    MuiTableRow: { styleOverrides: { root: { '&.MuiTableRow-hover:hover': { backgroundColor: tokens.hover } } } },
+    MuiDivider: { styleOverrides: { root: { borderColor: tokens.line } } },
+    MuiTooltip: {
+      defaultProps: { arrow: true },
+      styleOverrides: { tooltip: { backgroundColor: tokens.secondary, color: HERMES_BLUE, border: `1px solid ${HERMES_BLUE}`, fontFamily: tokens.monoFont, fontWeight: 700 }, arrow: { color: tokens.secondary } },
+    },
   };
 }
 

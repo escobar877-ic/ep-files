@@ -16,7 +16,7 @@ function formatFileSize(bytes) {
 }
 
 function StatCard({ label, value }) {
-  return <Grid item xs={12} sm={6} md={3}><Paper sx={{ p: 2, borderRadius: 3 }}><Typography color="text.secondary">{label}</Typography><Typography variant="h5" sx={{ fontWeight: 700 }}>{value}</Typography></Paper></Grid>;
+  return <Grid item xs={12} sm={6} md={3}><Paper sx={{ p: 2, minHeight: 96, border: '1px solid', borderColor: 'divider', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}><Typography variant="overline" color="text.secondary">{label}</Typography><Typography className="ep-display" sx={{ fontSize: '2rem', lineHeight: 1 }}>{value}</Typography></Paper></Grid>;
 }
 
 function StatsGrid({ stats }) {
@@ -70,7 +70,7 @@ function UserRow({ targetUser, currentUser, actionLoading, limitValue, maxStorag
 
 function UsersTable({ users, currentUser, actionLoading, limitInputs, maxStorageLimitMb, onLimitChange, onSaveLimit, onToggleBlock, onDeleteFiles }) {
   return (
-    <TableContainer component={Paper} sx={{ borderRadius: 3 }}>
+    <TableContainer component={Paper} sx={{ border: '1px solid', borderColor: 'divider' }}>
       <Table>
         <TableHead><TableRow><TableCell>Email</TableCell><TableCell>Роль</TableCell><TableCell>Статус</TableCell><TableCell>Файлы</TableCell><TableCell>Объём</TableCell><TableCell>Лимит</TableCell><TableCell>Дата</TableCell><TableCell align="right">Действия</TableCell></TableRow></TableHead>
         <TableBody>
@@ -95,7 +95,7 @@ function triggerBrowserDownload(blobData, filename) {
 
 function ReportsTable({ reports, actionLoading, onResolveReport, onDownloadReportFile }) {
   return (
-    <TableContainer component={Paper} sx={{ borderRadius: 3, mb: 3 }}>
+    <TableContainer component={Paper} sx={{ border: '1px solid', borderColor: 'divider', mb: 3 }}>
       <Table>
         <TableHead>
           <TableRow>
@@ -245,8 +245,8 @@ export default function Admin() {
 
   if (loading) return <Box className="ep-page" sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: (theme) => theme.ep.pageGradient }}><CircularProgress /></Box>;
   return (
-    <Box className="ep-page" sx={{ minHeight: '100vh', backgroundColor: '#0000f2' }}>
-      <Box sx={{ minHeight: 76, px: { xs: 1.5, sm: 3 }, color: '#f8f7f2', display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', borderBottom: '1px solid rgba(248,247,242,0.42)' }}>
+    <Box className="ep-page" sx={{ minHeight: '100vh', backgroundColor: (theme) => theme.ep.header }}>
+      <Box sx={{ minHeight: 76, px: { xs: 1.5, sm: 3 }, color: '#f8f7f2', display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', borderBottom: '1px solid', borderColor: (theme) => theme.ep.headerLine }}>
         <Button color="inherit" startIcon={<ArrowBack />} onClick={() => navigate('/files')} sx={{ justifySelf: 'start', px: 0 }}>Профиль</Button>
         <BrandWordmark inverse compact />
         <Typography variant="overline" sx={{ color: '#f8f7f2', justifySelf: 'end', display: { xs: 'none', sm: 'block' } }}>ADMIN CONTROL</Typography>

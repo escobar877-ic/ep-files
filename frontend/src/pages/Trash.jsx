@@ -82,10 +82,10 @@ function TrashHeader({ user, navigate }) {
   };
 
   return (
-    <Box sx={{ minHeight: 76, backgroundColor: '#0000f2', color: '#f8f7f2', borderBottom: '1px solid rgba(248,247,242,0.42)', px: { xs: 1.5, sm: 3 }, display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', position: 'sticky', top: 0, zIndex: 1000 }}>
+    <Box sx={{ minHeight: 76, backgroundColor: (theme) => theme.ep.header, color: '#f8f7f2', borderBottom: '1px solid', borderColor: (theme) => theme.ep.headerLine, px: { xs: 1.5, sm: 3 }, display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', position: 'sticky', top: 0, zIndex: 1000 }}>
       <Button color="inherit" onClick={() => navigate('/file-manager')} startIcon={<ArrowBack />} sx={{ justifySelf: 'start', px: 0 }}>Файлы</Button>
       <BrandWordmark inverse compact />
-      <HeaderProfileButton user={user} onClick={() => navigate('/files')} sx={{ ...headerButtonSx, justifySelf: 'end', color: '#f8f7f2', borderColor: 'rgba(248,247,242,0.55)', minWidth: { xs: 42, sm: 170 } }} />
+      <HeaderProfileButton user={user} onClick={() => navigate('/files')} sx={{ ...headerButtonSx, justifySelf: 'end', color: '#f8f7f2', borderColor: 'rgba(248,247,242,0.55)', minWidth: { xs: 42, sm: 170 }, '&:hover': { backgroundColor: 'rgba(248,247,242,0.1)', borderColor: '#f8f7f2' } }} />
     </Box>
   );
 }
@@ -365,7 +365,7 @@ export default function Trash() {
   };
 
   return (
-    <Box className="ep-page" sx={{ minHeight: '100vh', backgroundColor: '#0000f2' }}>
+    <Box className="ep-page" sx={{ minHeight: '100vh', backgroundColor: (theme) => theme.ep.header }}>
       <TrashHeader user={user} navigate={navigate} />
       <Container className="ep-stagger" maxWidth="xl" sx={{ minHeight: 'calc(100vh - 76px)', py: { xs: 3, md: 4 }, px: { xs: 2, sm: 3 }, display: 'grid', alignContent: 'start', gap: { xs: 2, md: 3 }, backgroundColor: 'background.default', borderLeft: '1px solid', borderRight: '1px solid', borderColor: 'divider' }}>
         <TrashHero currentFolder={currentFolder} itemsCount={items.length} totalSize={totalSize} busyId={busyId} onClear={() => setClearDialogOpen(true)} />

@@ -77,7 +77,7 @@ export default function TaskStatusItem({ task }) {
           <LinearProgress
             variant="determinate"
             value={task.progress || 0}
-            sx={{ mt: 1, height: 5, borderRadius: 999, backgroundColor: 'rgba(255,255,255,0.12)' }}
+            sx={{ mt: 1, height: 5, backgroundColor: (currentTheme) => currentTheme.ep.subtle }}
           />
         )}
       </Box>

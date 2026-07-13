@@ -73,7 +73,7 @@ function ProfileCard({ user, isAdmin, displayName, themeMode, avatarUploading, o
 
 function FilesHeader({ navigate }) {
   return (
-    <Box sx={{ minHeight: 76, backgroundColor: '#0000f2', color: '#f8f7f2', borderBottom: '1px solid rgba(248,247,242,0.42)', px: { xs: 1.5, sm: 3 }, display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', position: 'sticky', top: 0, zIndex: 1000 }}>
+    <Box sx={{ minHeight: 76, backgroundColor: (theme) => theme.ep.header, color: '#f8f7f2', borderBottom: '1px solid', borderColor: (theme) => theme.ep.headerLine, px: { xs: 1.5, sm: 3 }, display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', position: 'sticky', top: 0, zIndex: 1000 }}>
       <Button color="inherit" onClick={() => navigate('/file-manager')} startIcon={<Folder />} sx={{ justifySelf: 'start', px: 0 }}>Файлы</Button>
       <BrandWordmark inverse compact />
       <Typography variant="overline" sx={{ color: '#f8f7f2', justifySelf: 'end', display: { xs: 'none', sm: 'block' } }}>PROFILE</Typography>
@@ -310,7 +310,7 @@ export default function Files({ onPreviewFile }) {
     }
   };
   return (
-    <Box className="ep-page" sx={{ minHeight: '100vh', backgroundColor: '#0000f2' }}>
+    <Box className="ep-page" sx={{ minHeight: '100vh', backgroundColor: (theme) => theme.ep.header }}>
       <FilesHeader navigate={navigate} />
       <Container className="ep-stagger" maxWidth="xl" sx={{ minHeight: 'calc(100vh - 76px)', py: { xs: 3, md: 5 }, px: { xs: 2, sm: 3 }, position: 'relative', backgroundColor: 'background.default', borderLeft: '1px solid', borderRight: '1px solid', borderColor: 'divider' }}>
         {error && <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError('')}>{error}</Alert>}

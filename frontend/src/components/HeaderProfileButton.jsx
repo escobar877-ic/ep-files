@@ -14,7 +14,7 @@ export default function HeaderProfileButton({ user, sx, ...props }) {
         whiteSpace: 'nowrap',
         px: { xs: 0.75, sm: 1.5 },
         backgroundColor: 'transparent',
-        '&:hover': { backgroundColor: 'rgba(0, 0, 242, 0.08)' },
+        '&:hover': { backgroundColor: (theme) => theme.ep.hover },
         ...sx,
       }}
       {...props}

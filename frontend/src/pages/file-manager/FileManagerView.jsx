@@ -71,8 +71,8 @@ function FileManagerHeader({ user, searchQuery, setSearchQuery, navigate }) {
   };
 
   return (
-    <Box sx={{ backgroundColor: '#0000f2', color: '#f8f7f2', position: 'sticky', top: 0, zIndex: 1200 }}>
-      <Box sx={{ minHeight: 76, px: { xs: 1.5, sm: 2, md: 4 }, display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', borderBottom: '1px solid rgba(248,247,242,0.42)' }}>
+    <Box sx={{ backgroundColor: (theme) => theme.ep.header, color: '#f8f7f2', position: 'sticky', top: 0, zIndex: 1200 }}>
+      <Box sx={{ minHeight: 76, px: { xs: 1.5, sm: 2, md: 4 }, display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', borderBottom: '1px solid', borderColor: (theme) => theme.ep.headerLine }}>
         <Button component={RouterLink} to="/" color="inherit" startIcon={<Home />} sx={{ justifySelf: 'start', px: 0 }}>Главная</Button>
         <BrandWordmark inverse compact />
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, justifySelf: 'end' }}>
@@ -82,18 +82,18 @@ function FileManagerHeader({ user, searchQuery, setSearchQuery, navigate }) {
               {mode === 'dark' ? <LightMode /> : <DarkMode />}
             </IconButton>
           </Tooltip>
-          <HeaderProfileButton user={user} onClick={() => navigate('/files')} sx={{ ...headerButtonSx, color: '#f8f7f2', borderColor: 'rgba(248,247,242,0.55)', backgroundColor: 'transparent', minWidth: { xs: 42, sm: 170 } }} />
+          <HeaderProfileButton user={user} onClick={() => navigate('/files')} sx={{ ...headerButtonSx, color: '#f8f7f2', borderColor: 'rgba(248,247,242,0.55)', backgroundColor: 'transparent', minWidth: { xs: 42, sm: 170 }, '&:hover': { backgroundColor: 'rgba(248,247,242,0.1)', borderColor: '#f8f7f2' } }} />
         </Box>
       </Box>
-      <Box sx={{ bgcolor: '#f8f7f2', borderBottom: '1px solid #0000f2', px: { xs: 1.5, sm: 3 }, py: 1.25 }}>
+      <Box sx={{ bgcolor: (theme) => theme.ep.inset, borderBottom: '1px solid', borderColor: 'divider', px: { xs: 1.5, sm: 3 }, py: 1.25 }}>
         <TextField
           fullWidth
           placeholder="ПОИСК ПО ИМЕНИ ФАЙЛА"
           size="small"
           value={searchQuery}
           onChange={(event) => setSearchQuery(event.target.value)}
-          InputProps={{ startAdornment: <InputAdornment position="start"><Search sx={{ color: '#0000f2' }} /></InputAdornment> }}
-          sx={{ maxWidth: 1340, mx: 'auto', display: 'block', color: '#0000f2', '& .MuiInputBase-root': { color: '#0000f2' }, '& fieldset': { borderColor: '#0000f2 !important' } }}
+          InputProps={{ startAdornment: <InputAdornment position="start"><Search sx={{ color: 'primary.main' }} /></InputAdornment> }}
+          sx={{ maxWidth: 1340, mx: 'auto', display: 'block', '& .MuiInputBase-root': { color: 'text.primary', backgroundColor: 'transparent' }, '& fieldset': { borderColor: (theme) => `${theme.palette.divider} !important` }, '& .Mui-focused fieldset': { borderColor: (theme) => `${theme.palette.primary.main} !important` } }}
         />
       </Box>
     </Box>
@@ -168,7 +168,7 @@ function CreateFab({ tasks, anchorEl, onCreateClick }) {
   return (
     <Box sx={{ position: 'fixed', bottom: { xs: tasks.length > 0 ? 96 : 20, sm: tasks.length > 0 ? 116 : 48 }, right: { xs: 20, sm: 48 }, zIndex: 1100, transition: 'bottom 0.3s ease' }}>
       <Tooltip title="Создать или загрузить" placement="left">
-        <Fab variant="extended" onClick={onCreateClick} sx={{ backgroundColor: '#0000f2', color: '#f8f7f2', border: '1px solid #f8f7f2', px: { xs: 2.25, sm: 4 }, py: { xs: 2.25, sm: 3.5 }, minWidth: { xs: 56, sm: 64 }, gap: { xs: 0, sm: 1.5 }, '&:hover': { backgroundColor: '#edff45', color: '#0000f2', borderColor: '#0000f2' } }}>
+        <Fab variant="extended" onClick={onCreateClick} sx={{ backgroundColor: (theme) => theme.palette.mode === 'dark' ? theme.ep.acid : theme.ep.blue, color: (theme) => theme.palette.mode === 'dark' ? theme.ep.blue : theme.ep.onBlue, border: '1px solid', borderColor: (theme) => theme.palette.mode === 'dark' ? theme.ep.acid : theme.ep.onBlue, px: { xs: 2.25, sm: 4 }, py: { xs: 2.25, sm: 3.5 }, minWidth: { xs: 56, sm: 64 }, gap: { xs: 0, sm: 1.5 }, '&:hover': { backgroundColor: (theme) => theme.palette.mode === 'dark' ? theme.ep.primary : theme.ep.acid, color: '#0000f2', borderColor: (theme) => theme.palette.mode === 'dark' ? theme.ep.primary : theme.ep.blue } }}>
           <Add sx={{ transform: isOpen ? 'rotate(135deg)' : 'rotate(0deg)', transition: 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)', fontSize: { xs: '1.6rem', sm: '1.8rem' } }} />
           <Typography variant="button" sx={{ display: { xs: 'none', sm: 'block' }, fontWeight: 800, letterSpacing: 0, fontSize: '1.05rem' }}>Создать</Typography>
         </Fab>
@@ -209,7 +209,7 @@ function DeleteDialog({ open, fileToDelete, onClose, onConfirm }) {
       <DialogContent><DialogContentText>Вы действительно хотите удалить {fileToDelete?.type === 'folder' ? 'папку' : 'файл'} "{fileToDelete?.name}"? Действие нельзя отменить.</DialogContentText></DialogContent>
       <DialogActions sx={{ px: 3, pb: 2, gap: 1 }}>
         <Button onClick={onClose}>Отмена</Button>
-        <Button onClick={onConfirm} variant="contained" sx={{ backgroundColor: '#D32F2F' }}>Удалить</Button>
+        <Button onClick={onConfirm} variant="contained" color="error">Удалить</Button>
       </DialogActions>
     </Dialog>
   );
@@ -292,7 +292,7 @@ function GlobalDropOverlay({ active, locationName }) {
         alignItems: 'center',
         justifyContent: 'center',
         p: { xs: 2, sm: 4 },
-        backgroundColor: 'rgba(0,0,242,0.9)',
+        backgroundColor: (theme) => theme.palette.mode === 'dark' ? 'rgba(9,9,148,0.88)' : 'rgba(0,0,242,0.9)',
         animation: 'epScaleIn 140ms cubic-bezier(0.22, 1, 0.36, 1) both',
       }}
     >
@@ -358,7 +358,7 @@ export default function FileManagerView(props) {
     if (droppedFiles.length > 0) handlers.listProps?.onFileDropped?.(droppedFiles);
   };
   return (
-    <Box className="ep-page" onDragEnter={handleGlobalDragEnter} onDragOver={handleGlobalDragOver} onDragLeave={handleGlobalDragLeave} onDrop={handleGlobalDrop} sx={{ minHeight: '100vh', backgroundColor: '#0000f2', position: 'relative' }}>
+    <Box className="ep-page" onDragEnter={handleGlobalDragEnter} onDragOver={handleGlobalDragOver} onDragLeave={handleGlobalDragLeave} onDrop={handleGlobalDrop} sx={{ minHeight: '100vh', backgroundColor: (theme) => theme.ep.header, position: 'relative' }}>
       <input type="file" id="manual-file-input" onChange={handlers.manualUpload} style={{ display: 'none' }} />
       <FileManagerHeader user={user} searchQuery={searchQuery} setSearchQuery={setSearchQuery} navigate={navigate} />
       <Container className="ep-stagger" maxWidth="xl" sx={{ minHeight: 'calc(100vh - 130px)', py: { xs: 2, md: 3 }, px: { xs: 1.5, sm: 3 }, backgroundColor: 'background.default', borderLeft: '1px solid', borderRight: '1px solid', borderColor: 'divider' }}>

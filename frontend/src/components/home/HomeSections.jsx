@@ -26,9 +26,10 @@ export function HomeHeader({ user }) {
       component="header"
       sx={{
         minHeight: 86,
-        backgroundColor: blue,
+        backgroundColor: (theme) => user ? theme.ep.header : blue,
         color: paper,
-        borderBottom: '1px solid rgba(248,247,242,0.42)',
+        borderBottom: '1px solid',
+        borderColor: (theme) => user ? theme.ep.headerLine : 'rgba(248,247,242,0.42)',
         position: 'sticky',
         top: 0,
         zIndex: 1200,
@@ -86,6 +87,7 @@ export function HomeHeader({ user }) {
                   borderColor: 'rgba(248,247,242,0.55)',
                   backgroundColor: 'transparent',
                   minWidth: { xs: 44, sm: 170 },
+                  '&:hover': { backgroundColor: 'rgba(248,247,242,0.1)', borderColor: paper },
                 }}
               />
             </>
