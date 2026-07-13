@@ -76,7 +76,7 @@ export default function Login() {
   };
 
   return (
-    <AuthShell eyebrow="EP FILES • AUTHORIZATION" title={['ВЕРНИТЕСЬ', 'К СВОИМ', 'ФАЙЛАМ']} subtitle="Сессия защищена JWT-токенами в httpOnly cookies. После входа сразу откроется файловый менеджер.">
+    <AuthShell eyebrow="EP FILES • AUTHORIZATION" title={['ВЕРНИТЕСЬ', 'К СВОИМ', 'ФАЙЛАМ']} subtitle="Сессия защищена токеном в httpOnly cookie. После входа сразу откроется файловый менеджер.">
       <LoginForm register={register} errors={errors} isSubmitting={isSubmitting} onSubmit={onSubmit} handleSubmit={handleSubmit} error={error} notice={notice} />
     </AuthShell>
   );

@@ -284,7 +284,7 @@ export function HomeFooter() {
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr auto 1fr' }, alignItems: 'end', gap: 4 }}>
           <Box>
             <Typography variant="overline" sx={{ color: paper }}>EP FILES V2.0</Typography>
-            <Typography sx={{ color: 'rgba(248,247,242,0.68)', fontSize: '0.72rem', mt: 1 }}>DJANGO / REACT / POSTGRESQL</Typography>
+            <Typography sx={{ color: 'rgba(248,247,242,0.68)', fontSize: '0.72rem', mt: 1 }}>SITES WORKER / REACT / D1 + R2</Typography>
           </Box>
           <Typography className="ep-display" sx={{ fontSize: { xs: '4rem', md: '7rem' }, lineHeight: 0.7, color: paper, textAlign: 'center' }}>EP</Typography>
           <Box sx={{ textAlign: { xs: 'left', md: 'right' } }}>
