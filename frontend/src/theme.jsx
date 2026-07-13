@@ -245,6 +245,7 @@ function buildComponents(tokens, mode) {
 }
 
 function getInitialMode() {
+  if (typeof window === 'undefined') return 'light';
   const savedMode = localStorage.getItem(THEME_STORAGE_KEY);
   return savedMode === 'dark' || savedMode === 'light' ? savedMode : 'light';
 }
@@ -258,7 +259,7 @@ export function AppThemeProvider({ children }) {
     toggleMode: () => {
       setMode((currentMode) => {
         const nextMode = currentMode === 'dark' ? 'light' : 'dark';
-        localStorage.setItem(THEME_STORAGE_KEY, nextMode);
+        window.localStorage.setItem(THEME_STORAGE_KEY, nextMode);
         return nextMode;
       });
     },

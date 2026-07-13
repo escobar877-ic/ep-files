@@ -4,8 +4,10 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
+    "dev": "vite --config vite.spa.config.js",
+    "build": "vite build --config vite.spa.config.js",
+    "sites:dev": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext dev",
+    "sites:build": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext build",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "format": "prettier --write \"src/**/*.{js,jsx}\""
@@ -17,17 +19,20 @@
     "@mui/icons-material": "^7.3.10",
     "@mui/material": "^7.3.9",
     "axios": "^1.14.0",
-    "react": "^19.2.0",
-    "react-dom": "^19.2.0",
+    "next": "16.2.6",
+    "react": "19.2.6",
+    "react-dom": "19.2.6",
     "react-hook-form": "^7.72.0",
     "react-router-dom": "^7.13.2",
     "yup": "^1.7.1"
   },
   "devDependencies": {
+    "@cloudflare/vite-plugin": "1.37.1",
     "@eslint/js": "^9.39.1",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^5.1.1",
+    "@vitejs/plugin-react": "6.0.2",
+    "@vitejs/plugin-rsc": "0.5.26",
     "esbuild": "^0.27.4",
     "eslint": "^9.39.4",
     "eslint-config-prettier": "^10.1.8",
@@ -36,6 +41,9 @@
     "eslint-plugin-react-refresh": "^0.4.24",
     "globals": "^16.5.0",
     "prettier": "^3.8.1",
-    "vite": "^7.3.1"
+    "react-server-dom-webpack": "19.2.6",
+    "vite": "8.0.13",
+    "vinext": "0.0.50",
+    "wrangler": "4.92.0"
   }
 }
