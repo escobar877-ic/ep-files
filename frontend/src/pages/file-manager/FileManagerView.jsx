@@ -49,6 +49,7 @@ import {
   ViewList,
 } from '@mui/icons-material';
 import AccessControlDialog from '../../components/file-manager/AccessControlDialog';
+import AppHeaderGrid from '../../components/AppHeaderGrid';
 import BrandWordmark from '../../components/BrandWordmark';
 import FileList from '../../components/file-manager/FileList';
 import HeaderProfileButton from '../../components/HeaderProfileButton';
@@ -72,18 +73,20 @@ function FileManagerHeader({ user, searchQuery, setSearchQuery, navigate }) {
 
   return (
     <Box sx={{ backgroundColor: (theme) => theme.ep.header, color: '#f8f7f2', position: 'sticky', top: 0, zIndex: 1200 }}>
-      <Box sx={{ minHeight: 76, px: { xs: 1.5, sm: 2, md: 4 }, display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', borderBottom: '1px solid', borderColor: (theme) => theme.ep.headerLine }}>
-        <Button component={RouterLink} to="/" color="inherit" startIcon={<Home />} sx={{ justifySelf: 'start', px: 0 }}>Главная</Button>
-        <BrandWordmark inverse compact />
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, justifySelf: 'end' }}>
-          <Button color="inherit" onClick={() => navigate('/trash')} startIcon={<RestoreFromTrash />} sx={{ ...headerButtonSx, minWidth: { xs: 42, sm: 130 }, px: { xs: 0.5, sm: 1.5 }, '& .MuiButton-startIcon': { display: { xs: 'none', sm: 'inherit' } } }}>Корзина</Button>
-          <Tooltip title={nextThemeLabel}>
-            <IconButton onClick={toggleMode} aria-label={nextThemeLabel} sx={{ width: 40, height: 40, color: '#f8f7f2', border: '1px solid rgba(248,247,242,0.55)' }}>
-              {mode === 'dark' ? <LightMode /> : <DarkMode />}
-            </IconButton>
-          </Tooltip>
-          <HeaderProfileButton user={user} onClick={() => navigate('/files')} sx={{ ...headerButtonSx, color: '#f8f7f2', borderColor: 'rgba(248,247,242,0.55)', backgroundColor: 'transparent', minWidth: { xs: 42, sm: 170 }, '&:hover': { backgroundColor: 'rgba(248,247,242,0.1)', borderColor: '#f8f7f2' } }} />
-        </Box>
+      <Box sx={{ borderBottom: '1px solid', borderColor: (theme) => theme.ep.headerLine }}>
+        <AppHeaderGrid>
+          <Button component={RouterLink} to="/" color="inherit" startIcon={<Home />} sx={{ justifySelf: 'start', px: 0 }}>Главная</Button>
+          <BrandWordmark inverse compact />
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, justifySelf: 'end' }}>
+            <Button color="inherit" onClick={() => navigate('/trash')} startIcon={<RestoreFromTrash />} sx={{ ...headerButtonSx, minWidth: { xs: 42, sm: 130 }, px: { xs: 0.5, sm: 1.5 }, '& .MuiButton-startIcon': { display: { xs: 'none', sm: 'inherit' } } }}>Корзина</Button>
+            <Tooltip title={nextThemeLabel}>
+              <IconButton onClick={toggleMode} aria-label={nextThemeLabel} sx={{ width: 40, height: 40, color: '#f8f7f2', border: '1px solid rgba(248,247,242,0.55)' }}>
+                {mode === 'dark' ? <LightMode /> : <DarkMode />}
+              </IconButton>
+            </Tooltip>
+            <HeaderProfileButton user={user} onClick={() => navigate('/files')} sx={{ ...headerButtonSx, color: '#f8f7f2', borderColor: 'rgba(248,247,242,0.55)', backgroundColor: 'transparent', minWidth: { xs: 42, sm: 170 }, '&:hover': { backgroundColor: 'rgba(248,247,242,0.1)', borderColor: '#f8f7f2' } }} />
+          </Box>
+        </AppHeaderGrid>
       </Box>
       <Box sx={{ bgcolor: (theme) => theme.ep.inset, borderBottom: '1px solid', borderColor: 'divider', px: { xs: 1.5, sm: 3 }, py: 1.25 }}>
         <TextField

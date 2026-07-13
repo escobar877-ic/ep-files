@@ -7,6 +7,7 @@ import { useAuth } from '../context/authContextValue';
 import { useThemeMode } from '../themeMode';
 import { getApiErrorMessage } from './file-manager/fileManagerHelpers';
 import TaskStatusItem from '../components/TaskStatusItem';
+import AppHeaderGrid from '../components/AppHeaderGrid';
 import BrandWordmark from '../components/BrandWordmark';
 import FileTypeIcon from '../components/FileTypeIcon';
 import { getFileExtension } from '../components/fileTypeConfig';
@@ -73,10 +74,12 @@ function ProfileCard({ user, isAdmin, displayName, themeMode, avatarUploading, o
 
 function FilesHeader({ navigate }) {
   return (
-    <Box sx={{ minHeight: 76, backgroundColor: (theme) => theme.ep.header, color: '#f8f7f2', borderBottom: '1px solid', borderColor: (theme) => theme.ep.headerLine, px: { xs: 1.5, sm: 3 }, display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', position: 'sticky', top: 0, zIndex: 1000 }}>
-      <Button color="inherit" onClick={() => navigate('/file-manager')} startIcon={<Folder />} sx={{ justifySelf: 'start', px: 0 }}>Файлы</Button>
-      <BrandWordmark inverse compact />
-      <Typography variant="overline" sx={{ color: '#f8f7f2', justifySelf: 'end', display: { xs: 'none', sm: 'block' } }}>PROFILE</Typography>
+    <Box sx={{ minHeight: 86, backgroundColor: (theme) => theme.ep.header, color: '#f8f7f2', borderBottom: '1px solid', borderColor: (theme) => theme.ep.headerLine, position: 'sticky', top: 0, zIndex: 1000 }}>
+      <AppHeaderGrid>
+        <Button color="inherit" onClick={() => navigate('/file-manager')} startIcon={<Folder />} sx={{ justifySelf: 'start', px: 0 }}>Файлы</Button>
+        <BrandWordmark inverse compact />
+        <Typography variant="overline" sx={{ color: '#f8f7f2', justifySelf: 'end', display: { xs: 'none', sm: 'block' } }}>PROFILE</Typography>
+      </AppHeaderGrid>
     </Box>
   );
 }

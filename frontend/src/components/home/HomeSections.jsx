@@ -11,6 +11,7 @@ import {
 } from '@mui/icons-material';
 import HeaderProfileButton from '../HeaderProfileButton';
 import BrandWordmark from '../BrandWordmark';
+import AppHeaderGrid from '../AppHeaderGrid';
 import { useThemeMode } from '../../themeMode';
 
 const blue = '#0000f2';
@@ -35,18 +36,7 @@ export function HomeHeader({ user }) {
         zIndex: 1200,
       }}
     >
-      <Box
-        sx={{
-          minHeight: 86,
-          maxWidth: 1340,
-          mx: 'auto',
-          px: { xs: 2, md: 5 },
-          display: 'grid',
-          gridTemplateColumns: '1fr auto 1fr',
-          alignItems: 'center',
-          gap: 2,
-        }}
-      >
+      <AppHeaderGrid>
         <Button
           component={Link}
           to={user ? '/file-manager' : '/login'}
@@ -93,7 +83,7 @@ export function HomeHeader({ user }) {
             </>
           )}
         </Box>
-      </Box>
+      </AppHeaderGrid>
     </Box>
   );
 }

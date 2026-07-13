@@ -31,6 +31,7 @@ import {
 } from '@mui/icons-material';
 import { alpha } from '@mui/material/styles';
 import api from '../api/axios';
+import AppHeaderGrid from '../components/AppHeaderGrid';
 import HeaderProfileButton from '../components/HeaderProfileButton';
 import BrandWordmark from '../components/BrandWordmark';
 import FileTypeIcon from '../components/FileTypeIcon';
@@ -82,10 +83,12 @@ function TrashHeader({ user, navigate }) {
   };
 
   return (
-    <Box sx={{ minHeight: 76, backgroundColor: (theme) => theme.ep.header, color: '#f8f7f2', borderBottom: '1px solid', borderColor: (theme) => theme.ep.headerLine, px: { xs: 1.5, sm: 3 }, display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', position: 'sticky', top: 0, zIndex: 1000 }}>
-      <Button color="inherit" onClick={() => navigate('/file-manager')} startIcon={<ArrowBack />} sx={{ justifySelf: 'start', px: 0 }}>Файлы</Button>
-      <BrandWordmark inverse compact />
-      <HeaderProfileButton user={user} onClick={() => navigate('/files')} sx={{ ...headerButtonSx, justifySelf: 'end', color: '#f8f7f2', borderColor: 'rgba(248,247,242,0.55)', minWidth: { xs: 42, sm: 170 }, '&:hover': { backgroundColor: 'rgba(248,247,242,0.1)', borderColor: '#f8f7f2' } }} />
+    <Box sx={{ minHeight: 86, backgroundColor: (theme) => theme.ep.header, color: '#f8f7f2', borderBottom: '1px solid', borderColor: (theme) => theme.ep.headerLine, position: 'sticky', top: 0, zIndex: 1000 }}>
+      <AppHeaderGrid>
+        <Button color="inherit" onClick={() => navigate('/file-manager')} startIcon={<ArrowBack />} sx={{ justifySelf: 'start', px: 0 }}>Файлы</Button>
+        <BrandWordmark inverse compact />
+        <HeaderProfileButton user={user} onClick={() => navigate('/files')} sx={{ ...headerButtonSx, justifySelf: 'end', color: '#f8f7f2', borderColor: 'rgba(248,247,242,0.55)', minWidth: { xs: 42, sm: 170 }, '&:hover': { backgroundColor: 'rgba(248,247,242,0.1)', borderColor: '#f8f7f2' } }} />
+      </AppHeaderGrid>
     </Box>
   );
 }
