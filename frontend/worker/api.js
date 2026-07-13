@@ -86,6 +86,7 @@ export async function handleApiRequest(request, env) {
     if (path === '/api/auth/register' && method === 'POST') return register(request, env);
     if (path === '/api/auth/login' && method === 'POST') return login(request, env);
     if (path === '/api/auth/me' && method === 'GET') return me(request, env);
+    if (path === '/api/auth/me' && method === 'DELETE') return deleteCurrentAccount(request, env);
     if (path === '/api/auth/refresh' && method === 'POST') return refresh(request, env);
     if (path === '/api/auth/logout' && method === 'POST') return logout(request, env);
     if (path === '/api/auth/change-password' && method === 'POST') return changePassword(request, env);
@@ -383,6 +384,15 @@ async function login(request, env) {
 async function me(request, env) {
   const user = await requireUser(request, env);
   return user instanceof Response ? user : json({ user: serializeUser(user) });
+}
+
+async function deleteCurrentAccount(request, env) {
+  const user = await requireUser(request, env);
+  if (user instanceof Response) return user;
+  await deleteUserFiles(env, user.id);
+  if (user.avatar_key) await env.FILES.delete(user.avatar_key);
+  await env.DB.prepare('DELETE FROM users WHERE id = ?').bind(user.id).run();
+  return json({ status: 'deleted' }, 200, { 'set-cookie': sessionCookie('', 0) });
 }
 
 async function refresh(request, env) {
