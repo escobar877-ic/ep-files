@@ -2,6 +2,8 @@ import { zipSync } from 'fflate';
 
 const SESSION_COOKIE = 'ep_session';
 const SESSION_TTL_SECONDS = 7 * 24 * 60 * 60;
+const PASSWORD_HASH_ITERATIONS = 10000;
+const LEGACY_PASSWORD_HASH_ITERATIONS = 120000;
 const MAX_FILE_SIZE = 100 * 1024 * 1024;
 const MAX_AVATAR_SIZE = 2 * 1024 * 1024;
 const MAX_TEXT_FILE_SIZE = 2 * 1024 * 1024;
@@ -246,10 +248,10 @@ async function sha256(value) {
   return bytesToBase64Url(new Uint8Array(await crypto.subtle.digest('SHA-256', encoder.encode(value))));
 }
 
-async function hashPassword(password, salt = randomToken(18)) {
+async function hashPassword(password, salt = randomToken(18), iterations = PASSWORD_HASH_ITERATIONS) {
   const material = await crypto.subtle.importKey('raw', encoder.encode(password), 'PBKDF2', false, ['deriveBits']);
   const bits = await crypto.subtle.deriveBits(
-    { name: 'PBKDF2', hash: 'SHA-256', salt: encoder.encode(salt), iterations: 120000 },
+    { name: 'PBKDF2', hash: 'SHA-256', salt: encoder.encode(salt), iterations },
     material,
     256,
   );
@@ -257,7 +259,10 @@ async function hashPassword(password, salt = randomToken(18)) {
 }
 
 async function passwordMatches(password, salt, expected) {
-  const actual = await hashPassword(password, salt);
+  const separator = salt.indexOf('$');
+  const iterations = separator > 0 ? Number(salt.slice(0, separator)) : LEGACY_PASSWORD_HASH_ITERATIONS;
+  const rawSalt = separator > 0 ? salt.slice(separator + 1) : salt;
+  const actual = await hashPassword(password, rawSalt, iterations);
   if (actual.hash.length !== expected.length) return false;
   let difference = 0;
   for (let index = 0; index < expected.length; index += 1) difference |= actual.hash.charCodeAt(index) ^ expected.charCodeAt(index);
@@ -357,7 +362,7 @@ async function register(request, env) {
   const result = await env.DB.prepare(`
     INSERT INTO users (email, name, password_hash, password_salt, is_staff, is_superuser, date_joined)
     VALUES (?, ?, ?, ?, ?, ?, ?)
-  `).bind(email, name, credentials.hash, credentials.salt, firstUser ? 1 : 0, firstUser ? 1 : 0, nowIso()).run();
+  `).bind(email, name, credentials.hash, `${PASSWORD_HASH_ITERATIONS}$${credentials.salt}`, firstUser ? 1 : 0, firstUser ? 1 : 0, nowIso()).run();
   const user = await env.DB.prepare('SELECT * FROM users WHERE id = ?').bind(result.meta.last_row_id).first();
   const token = await createSession(env.DB, user.id);
   return json({ user: serializeUser(user) }, 201, { 'set-cookie': sessionCookie(token) });
@@ -406,7 +411,7 @@ async function changePassword(request, env) {
   if (nextPassword !== String(data.confirm_password || '')) return json({ confirm_password: ['Пароли не совпадают.'] }, 400);
   const credentials = await hashPassword(nextPassword);
   await env.DB.prepare('UPDATE users SET password_hash = ?, password_salt = ? WHERE id = ?')
-    .bind(credentials.hash, credentials.salt, user.id).run();
+    .bind(credentials.hash, `${PASSWORD_HASH_ITERATIONS}$${credentials.salt}`, user.id).run();
   return json({ detail: 'Пароль успешно изменён.' });
 }
 
