@@ -7,7 +7,7 @@
     "dev": "vite --config vite.spa.config.js",
     "build": "vite build --config vite.spa.config.js",
     "sites:dev": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext dev",
-    "sites:build": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext build",
+    "sites:build": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext build && node build/prune-sites-server.js",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "format": "prettier --write \"src/**/*.{js,jsx}\""
