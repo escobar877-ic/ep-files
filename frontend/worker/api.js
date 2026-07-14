@@ -336,6 +336,7 @@ function serializeFile(file) {
     name: file.name,
     size: Number(file.size || 0),
     date: file.created_at,
+    updated_at: file.updated_at || file.created_at,
     owner_email: file.owner_email,
     download_url: `/api/download/${file.id}/`,
     folder: file.folder_id == null ? null : Number(file.folder_id),
@@ -775,10 +776,38 @@ async function downloadFile(request, env, fileId, inline = false, context) {
   const historyPromise = addHistory(env.DB, file, user, 'download', null, null, 'Файл скачан', request);
   if (context?.waitUntil) context.waitUntil(historyPromise.catch((error) => console.error('Download history error', error)));
   else await historyPromise;
-  return storedFileResponse(request, env, file, inline);
+  return storedFileResponse(request, env, file, inline, context);
 }
 
-async function storedFileResponse(request, env, file, inline = false) {
+function privatePreviewCacheKey(request, file) {
+  const url = new URL(request.url);
+  url.pathname = `/__ep-private-preview-cache/${encodeURIComponent(file.storage_key)}`;
+  url.search = `?v=${encodeURIComponent(file.updated_at || file.created_at || '')}`;
+  return new Request(url.toString(), { method: 'GET' });
+}
+
+async function storedFileResponse(request, env, file, inline = false, context) {
+  const canUsePreviewCache = inline
+    && !request.headers.has('range')
+    && !request.headers.has('if-none-match')
+    && !request.headers.has('if-modified-since');
+  const previewCache = canUsePreviewCache ? globalThis.caches?.default : null;
+  const cacheKey = previewCache ? privatePreviewCacheKey(request, file) : null;
+  if (previewCache && cacheKey) {
+    let cached = null;
+    try {
+      cached = await previewCache.match(cacheKey);
+    } catch (error) {
+      console.error('Preview cache lookup error', error);
+    }
+    if (cached) {
+      const cachedHeaders = new Headers(cached.headers);
+      cachedHeaders.set('content-disposition', `inline; filename*=UTF-8''${encodeURIComponent(file.name)}`);
+      cachedHeaders.set('cache-control', 'private, max-age=31536000, immutable');
+      return new Response(cached.body, { status: 200, headers: cachedHeaders });
+    }
+  }
+
   const object = await env.FILES.get(file.storage_key, { onlyIf: request.headers, range: request.headers });
   if (!object) return json({ error: 'File not found on server' }, 404);
   const totalSize = Number(file.size || object.size || 0);
@@ -789,7 +818,7 @@ async function storedFileResponse(request, env, file, inline = false) {
   headers.set('content-disposition', `${disposition}; filename*=UTF-8''${encodeURIComponent(file.name)}`);
   headers.set('etag', object.httpEtag);
   headers.set('accept-ranges', 'bytes');
-  headers.set('cache-control', 'private, no-cache');
+  headers.set('cache-control', inline ? 'private, max-age=31536000, immutable' : 'private, no-cache');
 
   if (!('body' in object)) {
     const notModified = request.headers.has('if-none-match') || request.headers.has('if-modified-since');
@@ -806,7 +835,14 @@ async function storedFileResponse(request, env, file, inline = false) {
   }
 
   headers.set('content-length', String(totalSize));
-  return new Response(object.body, { status: 200, headers });
+  const response = new Response(object.body, { status: 200, headers });
+  if (previewCache && cacheKey && context?.waitUntil) {
+    const cacheHeaders = new Headers(headers);
+    cacheHeaders.set('cache-control', 'public, max-age=31536000, immutable');
+    const cacheResponse = new Response(response.clone().body, { status: 200, headers: cacheHeaders });
+    context.waitUntil(previewCache.put(cacheKey, cacheResponse).catch((error) => console.error('Preview cache error', error)));
+  }
+  return response;
 }
 
 async function mutateFile(request, env, fileId) {
@@ -922,11 +958,36 @@ async function search(request, env, url) {
   if (user instanceof Response) return user;
   const query = String(url.searchParams.get('q') || '').trim();
   if (!query) return json({ error: "Search parameter 'q' is required" }, 400);
-  const filesResponse = await listFiles(request, env);
-  const foldersResponse = await listFolders(request, env);
-  if (!filesResponse.ok) return filesResponse;
-  const files = (await filesResponse.json()).filter((item) => item.name.toLowerCase().includes(query.toLowerCase())).map((item) => ({ ...item, type: 'file' }));
-  const folders = (await foldersResponse.json()).folders.filter((item) => item.name.toLowerCase().includes(query.toLowerCase())).map((item) => ({ ...item, type: 'folder' }));
+  const [fileResult, folderResult, permissionResult, directSizeResult] = await env.DB.batch([
+    env.DB.prepare(`
+      SELECT f.*, u.email AS owner_email, CASE WHEN fav.id IS NULL THEN 0 ELSE 1 END AS is_favorite
+      FROM files f JOIN users u ON u.id = f.owner_id
+      LEFT JOIN favorites fav ON fav.user_id = ? AND fav.item_type = 'file' AND fav.item_id = f.id
+      WHERE f.is_deleted = 0 ORDER BY f.created_at DESC
+    `).bind(user.id),
+    env.DB.prepare('SELECT f.*, u.email AS owner_email FROM folders f JOIN users u ON u.id = f.owner_id WHERE f.is_deleted = 0 ORDER BY f.name'),
+    env.DB.prepare('SELECT file_id, folder_id, permission_type, inherit FROM permissions WHERE user_id = ?').bind(user.id),
+    env.DB.prepare('SELECT folder_id, COALESCE(SUM(size), 0) AS total FROM files WHERE is_deleted = 0 AND folder_id IS NOT NULL GROUP BY folder_id'),
+  ]);
+  const folderRows = folderResult.results || [];
+  const snapshot = buildAccessSnapshot(permissionResult.results || [], folderRows);
+  const resolveSize = folderSizeResolver(folderRows, directSizeResult.results || []);
+  const normalizedQuery = query.toLowerCase();
+  const files = (fileResult.results || []).flatMap((file) => {
+    const permission = snapshotPermission(user, 'files', file, snapshot);
+    if (!permission || !file.name.toLowerCase().includes(normalizedQuery)) return [];
+    return [{ ...serializeFile(file), type: 'file', is_favorite: Boolean(file.is_favorite), can_write: canWrite(permission) }];
+  });
+  const folders = folderRows.flatMap((folder) => {
+    const permission = snapshotPermission(user, 'folders', folder, snapshot);
+    if (!permission || !folder.name.toLowerCase().includes(normalizedQuery)) return [];
+    return [{
+      id: Number(folder.id), name: folder.name, type: 'folder', parent_id: folder.parent_id == null ? null : Number(folder.parent_id),
+      path: folderPathFromSnapshot(folder.id, snapshot.folderById), size: resolveSize(folder.id), owner_email: folder.owner_email,
+      is_public: Boolean(folder.is_public), public_token: folder.public_token || null, public_expires_at: folder.public_expires_at || null,
+      created_at: folder.created_at, updated_at: folder.updated_at, can_write: canWrite(permission),
+    }];
+  });
   return json({ query, count: files.length + folders.length, results: [...folders, ...files] });
 }
 

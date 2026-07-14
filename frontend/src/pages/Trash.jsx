@@ -105,7 +105,7 @@ function TrashHero({ currentFolder, itemsCount, totalSize, busyId, onClear }) {
             <Typography className="ep-display" sx={{ color: 'text.primary', lineHeight: 0.9, fontSize: { xs: '2.4rem', sm: '4rem' }, overflowWrap: 'anywhere' }}>
               {currentFolder ? currentFolder.name : 'Корзина файлов'}
             </Typography>
-            <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.75 }}>
+            <Typography variant="body2" sx={{ color: (theme) => theme.palette.mode === 'dark' ? theme.ep.warmMuted : theme.palette.text.secondary, mt: 0.75, fontWeight: 600 }}>
               {itemsCount} объектов · {formatFileSize(totalSize)}
             </Typography>
           </Box>
@@ -140,6 +140,7 @@ function EmptyTrash() {
         px: 3,
         borderRadius: '12px',
         textAlign: 'center',
+        backgroundColor: (theme) => theme.palette.mode === 'dark' ? theme.ep.elevated : theme.ep.panel,
       }}
     >
       <Box
@@ -149,18 +150,18 @@ function EmptyTrash() {
           mx: 'auto',
           mb: 2,
           borderRadius: '50%',
-          bgcolor: (theme) => alpha(theme.palette.primary.main, 0.12),
+          bgcolor: (theme) => theme.palette.mode === 'dark' ? alpha(theme.ep.warm, 0.12) : alpha(theme.palette.primary.main, 0.12),
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
         }}
       >
-        <FolderOff sx={{ fontSize: 44, color: 'text.secondary' }} />
+        <FolderOff sx={{ fontSize: 44, color: (theme) => theme.palette.mode === 'dark' ? theme.ep.warmMuted : theme.palette.text.secondary }} />
       </Box>
-      <Typography variant="h5" sx={{ fontWeight: 800, color: 'text.primary', mb: 1 }}>
+      <Typography variant="h5" sx={{ fontWeight: 800, color: (theme) => theme.palette.mode === 'dark' ? theme.ep.warm : theme.palette.text.primary, mb: 1, fontSize: { xs: '1.45rem', sm: '1.7rem' } }}>
         Корзина пуста
       </Typography>
-      <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+      <Typography variant="body2" sx={{ color: (theme) => theme.palette.mode === 'dark' ? theme.ep.warmMuted : theme.palette.text.secondary, fontWeight: 500, fontSize: { xs: '0.82rem', sm: '0.9rem' }, lineHeight: 1.6 }}>
         Удаленные файлы и непустые папки появятся здесь.
       </Typography>
     </Paper>

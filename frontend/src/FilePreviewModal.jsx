@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { alpha, useTheme } from '@mui/material/styles';
-import api, { apiUrl, startBrowserDownload } from './api/axios';
+import api, { apiUrl, filePreviewPath, startBrowserDownload } from './api/axios';
 
 const previewGroups = {
   image: ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp', 'svg'],
@@ -22,10 +22,6 @@ function getExtension(fileName) {
 
 function getDownloadPath(file) {
   return file.download_url ? file.download_url.replace(/^\/api/, '') : `/files/${file.id}/download/`;
-}
-
-function getPreviewPath(file) {
-  return `/preview/${file.id}/`;
 }
 
 function decodeText(bytes) {
@@ -847,11 +843,11 @@ function usePreview(file) {
       setState({ content: '', previewUrl: null, office: null, loading: true, error: null });
       if (previewType === 'unsupported') return setState({ content: '', previewUrl: null, office: null, loading: false, error: `Предпросмотр недоступен для файла ${file.name}` });
       if (['image', 'video', 'audio', 'pdf'].includes(previewType)) {
-        setState({ content: '', previewUrl: apiUrl(getPreviewPath(file)), office: null, loading: false, error: null });
+        setState({ content: '', previewUrl: apiUrl(filePreviewPath(file)), office: null, loading: false, error: null });
         return;
       }
       try {
-        const response = await api.get(getPreviewPath(file), { responseType: previewType === 'text' ? 'text' : 'arraybuffer', timeout: 0 });
+        const response = await api.get(filePreviewPath(file), { responseType: previewType === 'text' ? 'text' : 'arraybuffer', timeout: 0 });
         if (cancelled) return;
         if (previewType === 'text') setState({ content: response.data, previewUrl: null, office: null, loading: false, error: null });
         else if (previewType === 'office') {
@@ -1106,12 +1102,32 @@ function OfficePreview({ office, theme }) {
   return <div style={{ width: '100%', maxHeight: '70vh', overflow: 'auto', background: theme.palette.background.paper, color: theme.palette.text.primary, padding: 18, borderRadius: 0 }}>{office.paragraphs.map((paragraph, index) => <p key={`paragraph-${index}`} style={{ margin: '0 0 10px', lineHeight: 1.55 }}>{paragraph}</p>)}</div>;
 }
 
+function ImagePreview({ src, theme, mediaStyle }) {
+  const [status, setStatus] = useState('loading');
+  return (
+    <div style={{ position: 'relative', minWidth: 'min(100%, 320px)', minHeight: 260, display: 'grid', placeItems: 'center' }}>
+      {status === 'loading' && <div style={{ color: theme.palette.text.secondary, fontWeight: 700 }}>Загрузка изображения...</div>}
+      {status === 'error' && <div style={{ color: theme.palette.error.main, fontWeight: 700 }}>Не удалось загрузить изображение</div>}
+      <img
+        src={src}
+        alt="Preview"
+        decoding="async"
+        fetchPriority="high"
+        draggable={false}
+        onLoad={() => setStatus('ready')}
+        onError={() => setStatus('error')}
+        style={{ ...mediaStyle, display: status === 'error' ? 'none' : 'block', opacity: status === 'ready' ? 1 : 0, transition: 'opacity 140ms ease' }}
+      />
+    </div>
+  );
+}
+
 function PreviewContent({ file, state, theme }) {
   const type = getPreviewType(file.name);
   const mediaStyle = { maxWidth: '100%', maxHeight: '70vh', borderRadius: 0 };
   if (state.loading) return <div style={{ color: theme.palette.text.secondary }}>Загрузка данных...</div>;
   if (state.error) return <div style={{ color: theme.palette.error.main, fontWeight: 600 }}>{state.error}</div>;
-  if (type === 'image') return <img src={state.previewUrl} alt="Preview" style={mediaStyle} />;
+  if (type === 'image') return <ImagePreview key={state.previewUrl} src={state.previewUrl} theme={theme} mediaStyle={mediaStyle} />;
   if (type === 'video') return <video src={state.previewUrl} style={{ ...mediaStyle, width: '100%', background: '#000' }} controls />;
   if (type === 'audio') return <audio src={state.previewUrl} controls style={{ width: '100%' }} />;
   if (type === 'pdf') return <iframe src={`${state.previewUrl}#toolbar=1&navpanes=0`} title={file.name} style={{ width: '100%', height: '70vh', border: `1px solid ${theme.palette.divider}`, borderRadius: 0, background: '#fff' }} />;

@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useDeferredValue, useEffect, useMemo, useState } from 'react';
 import api from '../../api/axios';
-import { buildBreadcrumbs, buildFolderSizes, getApiErrorMessage } from './fileManagerHelpers';
+import { buildBreadcrumbs, getApiErrorMessage } from './fileManagerHelpers';
 
-async function fetchFileManagerData(currentFolderId) {
+async function fetchFileManagerData() {
   const ts = Date.now();
   const [foldersRes, filesRes, favsRes] = await Promise.all([
     api.get(`folders/?_ts=${ts}`),
@@ -20,65 +20,57 @@ async function fetchFileManagerData(currentFolderId) {
     ...file,
     folder: file.folder && accessibleFolderIds.has(file.folder) ? file.folder : null,
   }));
-  const calculateFolderSize = buildFolderSizes(visibleFolders, visibleFiles);
   return {
     favoriteIds: { files: favsRes.data.file_ids || [], folders: favsRes.data.folder_ids || [] },
-    folders: visibleFolders.filter((folder) => folder.parent_id === currentFolderId).map((folder) => ({ ...folder, size: calculateFolderSize(folder.id) })),
-    files: visibleFiles.filter((file) => (currentFolderId ? file.folder === currentFolderId : !file.folder)),
-    breadcrumbs: buildBreadcrumbs(visibleFolders, currentFolderId),
+    folders: visibleFolders,
+    files: visibleFiles,
   };
 }
 
 export default function useFileManagerData(currentFolderId, searchQuery) {
   const [favoriteIds, setFavoriteIds] = useState({ files: [], folders: [] });
-  const [folders, setFolders] = useState([]);
-  const [files, setFiles] = useState([]);
-  const [breadcrumbs, setBreadcrumbs] = useState([]);
+  const [allFolders, setAllFolders] = useState([]);
+  const [allFiles, setAllFiles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const deferredSearchQuery = useDeferredValue(searchQuery);
 
   const loadData = useCallback(async ({ silent = false } = {}) => {
     if (!silent) setLoading(true);
     setError('');
     try {
-      const data = await fetchFileManagerData(currentFolderId);
+      const data = await fetchFileManagerData();
       setFavoriteIds(data.favoriteIds);
-      setFolders(data.folders);
-      setFiles(data.files);
-      setBreadcrumbs(data.breadcrumbs);
+      setAllFolders(data.folders);
+      setAllFiles(data.files);
     } catch (err) {
       console.error('Error loading data:', err);
       setError(getApiErrorMessage(err, 'Не удалось загрузить файлы и папки'));
     } finally {
       if (!silent) setLoading(false);
     }
-  }, [currentFolderId]);
+  }, []);
 
   useEffect(() => {
-    if (!searchQuery.trim()) {
-      loadData();
-      return;
+    loadData();
+  }, [loadData]);
+
+  const visibleData = useMemo(() => {
+    const normalizedQuery = deferredSearchQuery.trim().toLowerCase();
+    if (normalizedQuery) {
+      return {
+        folders: allFolders.filter((folder) => folder.name.toLowerCase().includes(normalizedQuery)),
+        files: allFiles.filter((file) => file.name.toLowerCase().includes(normalizedQuery)),
+      };
     }
-    const timer = setTimeout(() => searchFiles(searchQuery, setFiles, setFolders, setError, setLoading), 400);
-    return () => clearTimeout(timer);
-  }, [loadData, searchQuery]);
+    return {
+      folders: allFolders.filter((folder) => folder.parent_id === currentFolderId),
+      files: allFiles.filter((file) => (currentFolderId ? file.folder === currentFolderId : !file.folder)),
+    };
+  }, [allFiles, allFolders, currentFolderId, deferredSearchQuery]);
 
-  return { favoriteIds, setFavoriteIds, folders, files, breadcrumbs, loading, error, setError, success, setSuccess, loadData };
-}
+  const breadcrumbs = useMemo(() => buildBreadcrumbs(allFolders, currentFolderId), [allFolders, currentFolderId]);
 
-async function searchFiles(searchQuery, setFiles, setFolders, setError, setLoading) {
-  setLoading(true);
-  try {
-    const response = await api.get(`/search/?q=${encodeURIComponent(searchQuery)}`);
-    const results = response.data.results || [];
-    setFiles(results.filter((item) => item.type !== 'folder'));
-    setFolders(results.filter((item) => item.type === 'folder'));
-    setError('');
-  } catch (err) {
-    console.error('Ошибка при поиске:', err);
-    setError(getApiErrorMessage(err, 'Не удалось выполнить поиск'));
-  } finally {
-    setLoading(false);
-  }
+  return { favoriteIds, setFavoriteIds, folders: visibleData.folders, files: visibleData.files, breadcrumbs, loading, error, setError, success, setSuccess, loadData };
 }

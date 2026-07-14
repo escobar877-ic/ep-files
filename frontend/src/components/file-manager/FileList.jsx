@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Box, IconButton, Paper, Tooltip, Typography } from '@mui/material';
 import { Download as DownloadIcon, Edit, MoreVert, Star } from '@mui/icons-material';
+import { prefetchImagePreview } from '../../api/axios';
 import FileTypeIcon from '../FileTypeIcon';
 import { getFileExtension } from '../fileTypeConfig';
 import FileRow from './FileRow';
@@ -73,7 +74,7 @@ function GridCard({ file, handlers }) {
   };
   const uploaderText = canReportFile(file, handlers.currentUserEmail) ? `Загрузил: ${file.owner_email}` : '';
   return (
-    <Paper elevation={0} draggable={isDraggableFile} onDragStart={(event) => setDraggedManagerItem(event, file)} onClick={open} onContextMenu={openContextMenu} onDragOver={handleDragOver} onDragLeave={() => setIsDragOver(false)} onDrop={handleDropOnCard} sx={{ p: 2, minHeight: 148, border: '1px solid', borderColor: isDragOver ? 'primary.main' : 'divider', position: 'relative', cursor: isDraggableFile ? 'grab' : 'pointer', backgroundColor: (theme) => (isDragOver ? theme.ep.selected : theme.ep.panel), transition: 'background-color 150ms ease, border-color 150ms ease', '&:hover': { backgroundColor: (theme) => theme.palette.mode === 'dark' ? theme.ep.hover : 'rgba(0,0,242,0.045)', borderColor: 'primary.main', '& .grid-menu-btn,.download-btn,.favorite-btn,.edit-btn': { opacity: 1 } }, '&:active': { cursor: isDraggableFile ? 'grabbing' : 'pointer' } }}>
+    <Paper elevation={0} draggable={isDraggableFile} onDragStart={(event) => setDraggedManagerItem(event, file)} onMouseEnter={() => prefetchImagePreview(file)} onFocus={() => prefetchImagePreview(file)} onClick={open} onContextMenu={openContextMenu} onDragOver={handleDragOver} onDragLeave={() => setIsDragOver(false)} onDrop={handleDropOnCard} sx={{ p: 2, minHeight: 148, border: '1px solid', borderColor: isDragOver ? 'primary.main' : 'divider', position: 'relative', cursor: isDraggableFile ? 'grab' : 'pointer', backgroundColor: (theme) => (isDragOver ? theme.ep.selected : theme.ep.panel), transition: 'background-color 150ms ease, border-color 150ms ease', '&:hover': { backgroundColor: (theme) => theme.palette.mode === 'dark' ? theme.ep.hover : 'rgba(0,0,242,0.045)', borderColor: 'primary.main', '& .grid-menu-btn,.download-btn,.favorite-btn,.edit-btn': { opacity: 1 } }, '&:active': { cursor: isDraggableFile ? 'grabbing' : 'pointer' } }}>
       {isFolder ? <FolderActions folder={file} handlers={handlers} /> : <GridActionButtons file={file} {...handlers} />}
       <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}><FileTypeIcon file={file} size={48} /></Box>
       <Typography variant="subtitle2" sx={{ fontWeight: 500, mb: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', pr: { xs: 0, sm: 6 } }}>{file.name}</Typography>

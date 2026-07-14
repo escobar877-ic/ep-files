@@ -95,6 +95,27 @@ export function apiUrl(path) {
   return `${base}${suffix}`;
 }
 
+export function filePreviewPath(file) {
+  const version = file?.updated_at || file?.date || '';
+  const query = version ? `?v=${encodeURIComponent(version)}` : '';
+  return `/preview/${file.id}/${query}`;
+}
+
+const prefetchedImageUrls = new Set();
+const previewableImageExtensions = new Set(['png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp', 'svg']);
+
+export function prefetchImagePreview(file) {
+  const extension = String(file?.name || '').split('.').pop().toLowerCase();
+  if (!file?.id || !previewableImageExtensions.has(extension) || Number(file.size || 0) > 12 * 1024 * 1024) return;
+  const url = apiUrl(filePreviewPath(file));
+  if (prefetchedImageUrls.has(url)) return;
+  prefetchedImageUrls.add(url);
+  const image = new Image();
+  image.decoding = 'async';
+  image.onerror = () => prefetchedImageUrls.delete(url);
+  image.src = url;
+}
+
 export function startBrowserDownload(path, fileName) {
   const link = document.createElement('a');
   link.href = /^https?:\/\//i.test(path) ? path : apiUrl(path);

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Box, IconButton, Tooltip, Typography } from '@mui/material';
 import { Download as DownloadIcon, Edit, MoreVert, Star } from '@mui/icons-material';
+import { prefetchImagePreview } from '../../api/axios';
 import { getDraggedManagerItem, hasDraggedManagerItem, setDraggedManagerItem } from './dragDrop';
 
 function isEditableTextFile(file) {
@@ -82,7 +83,7 @@ export default function FileRow({ file, getFileIcon, formatFileSize, formatDate,
     setIsDragActive(true);
   };
   return (
-    <Box draggable={isDraggableFile} onDragStart={(event) => setDraggedManagerItem(event, file)} onClick={openItem} onContextMenu={openContextMenu} onDragOver={handleDragOver} onDragLeave={() => setIsDragActive(false)} onDrop={handleDrop} sx={{ display: 'grid', gridTemplateColumns: { xs: '44px minmax(0, 1fr) auto', md: '56px minmax(0, 1fr) minmax(140px, 220px) 150px 120px 120px' }, alignItems: 'center', gap: { xs: 1, md: 1 }, p: { xs: 1.5, md: 2 }, borderBottom: '1px solid', borderColor: 'divider', cursor: isDraggableFile ? 'grab' : 'pointer', backgroundColor: (theme) => isDragActive ? theme.ep.selected : 'inherit', '&:hover': { backgroundColor: (theme) => theme.ep.hover }, '&:active': { cursor: isDraggableFile ? 'grabbing' : 'pointer' } }}>
+    <Box draggable={isDraggableFile} onDragStart={(event) => setDraggedManagerItem(event, file)} onMouseEnter={() => prefetchImagePreview(file)} onFocus={() => prefetchImagePreview(file)} onClick={openItem} onContextMenu={openContextMenu} onDragOver={handleDragOver} onDragLeave={() => setIsDragActive(false)} onDrop={handleDrop} sx={{ display: 'grid', gridTemplateColumns: { xs: '44px minmax(0, 1fr) auto', md: '56px minmax(0, 1fr) minmax(140px, 220px) 150px 120px 120px' }, alignItems: 'center', gap: { xs: 1, md: 1 }, p: { xs: 1.5, md: 2 }, borderBottom: '1px solid', borderColor: 'divider', cursor: isDraggableFile ? 'grab' : 'pointer', backgroundColor: (theme) => isDragActive ? theme.ep.selected : 'inherit', '&:hover': { backgroundColor: (theme) => theme.ep.hover }, '&:active': { cursor: isDraggableFile ? 'grabbing' : 'pointer' } }}>
       <Box sx={{ display: 'flex' }}>{getFileIcon(file, 40)}</Box>
       <Box sx={{ minWidth: 0 }}>
         <Typography variant="body2" sx={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{file.name}</Typography>
