@@ -79,8 +79,13 @@ export const uploadFileApi = (file, { folderId = null, onProgress, signal } = {}
   onUploadProgress: (event) => {
     const total = Number(event.total) || file.size;
     const loaded = Math.min(Number(event.loaded) || 0, total || file.size);
-    const percent = total > 0 ? Math.min(99, Math.floor((loaded * 100) / total)) : 0;
-    onProgress?.({ loaded, total, percent });
+    const percent = total > 0 ? Math.min(100, Math.floor((loaded * 100) / total)) : 0;
+    onProgress?.({
+      loaded,
+      total,
+      percent,
+      phase: total > 0 && loaded >= total ? 'saving' : 'uploading',
+    });
   },
 });
 

@@ -159,13 +159,13 @@ function StorageOverview({ stats, formatFileSize }) {
   );
 }
 
-function QuickUpload({ onFileDropped, isUploading, uploadProgress }) {
+function QuickUpload({ onFileDropped, isUploading, uploadProgress, uploadPhase }) {
   return (
     <Box component="section" sx={{ p: { xs: 2.5, md: 3 } }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Typography variant="overline" sx={{ color: 'text.primary' }}>БЫСТРАЯ ЗАГРУЗКА</Typography>
         <Typography variant="overline" sx={{ color: isUploading ? 'text.primary' : 'text.secondary' }}>
-          {isUploading ? `${uploadProgress}%` : 'READY'}
+          {isUploading ? (uploadPhase === 'saving' ? 'СОХРАНЕНИЕ' : `${uploadProgress}%`) : 'READY'}
         </Typography>
       </Box>
       <FilesPageUploader
@@ -173,6 +173,7 @@ function QuickUpload({ onFileDropped, isUploading, uploadProgress }) {
         onFileDropped={onFileDropped}
         isUploading={isUploading}
         uploadProgress={uploadProgress}
+        uploadPhase={uploadPhase}
       />
     </Box>
   );
@@ -188,6 +189,7 @@ export default function AuthenticatedWorkspace({
   onFileDropped,
   isUploading,
   uploadProgress,
+  uploadPhase,
   onUploadClick,
   onOpenFiles,
   formatFileSize,
@@ -256,7 +258,7 @@ export default function AuthenticatedWorkspace({
           />
           <Box component="aside" sx={{ minWidth: 0, borderTop: { xs: '1px solid', lg: 0 }, borderColor: 'divider' }}>
             <StorageOverview stats={stats} formatFileSize={formatFileSize} />
-            <QuickUpload onFileDropped={onFileDropped} isUploading={isUploading} uploadProgress={uploadProgress} />
+            <QuickUpload onFileDropped={onFileDropped} isUploading={isUploading} uploadProgress={uploadProgress} uploadPhase={uploadPhase} />
           </Box>
         </Box>
       </Container>

@@ -28,13 +28,17 @@ function formatDate(dateValue) {
   return date.toLocaleDateString('ru-RU', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
-async function uploadQuickFile({ file, setUploadError, setIsQuickUploading, setQuickUploadProgress, refresh }) {
+async function uploadQuickFile({ file, setUploadError, setIsQuickUploading, setQuickUploadProgress, setQuickUploadPhase, refresh }) {
   try {
     setUploadError('');
     setIsQuickUploading(true);
     setQuickUploadProgress(0);
+    setQuickUploadPhase('uploading');
     await uploadFileApi(file, {
-      onProgress: ({ percent }) => setQuickUploadProgress(percent),
+      onProgress: ({ percent, phase }) => {
+        setQuickUploadProgress(percent);
+        setQuickUploadPhase(phase);
+      },
     });
     setQuickUploadProgress(100);
     await refresh();
@@ -43,6 +47,7 @@ async function uploadQuickFile({ file, setUploadError, setIsQuickUploading, setQ
     setUploadError(getApiErrorMessage(err, 'Не удалось загрузить файл'));
   } finally {
     setIsQuickUploading(false);
+    setQuickUploadPhase('idle');
     setTimeout(() => setQuickUploadProgress(0), 800);
   }
 }
@@ -54,6 +59,7 @@ function useHomePageData(user) {
   const [uploadError, setUploadError] = useState('');
   const [isQuickUploading, setIsQuickUploading] = useState(false);
   const [quickUploadProgress, setQuickUploadProgress] = useState(0);
+  const [quickUploadPhase, setQuickUploadPhase] = useState('idle');
 
   const fetchRecentFiles = async () => {
     try {
@@ -90,10 +96,10 @@ function useHomePageData(user) {
   const processQuickUpload = async (incomingFile) => {
     const file = incomingFile instanceof File ? incomingFile : incomingFile?.[0];
     if (!file) return;
-    await uploadQuickFile({ file, setUploadError, setIsQuickUploading, setQuickUploadProgress, refresh });
+    await uploadQuickFile({ file, setUploadError, setIsQuickUploading, setQuickUploadProgress, setQuickUploadPhase, refresh });
   };
 
-  return { recentFiles, storageStats, loading, uploadError, setUploadError, isQuickUploading, quickUploadProgress, processQuickUpload };
+  return { recentFiles, storageStats, loading, uploadError, setUploadError, isQuickUploading, quickUploadProgress, quickUploadPhase, processQuickUpload };
 }
 
 export default function HomePage() {
@@ -125,6 +131,7 @@ export default function HomePage() {
           onFileDropped={homeData.processQuickUpload}
           isUploading={homeData.isQuickUploading}
           uploadProgress={homeData.quickUploadProgress}
+          uploadPhase={homeData.quickUploadPhase}
           onUploadClick={handleQuickUploadClick}
           onOpenFiles={() => navigate('/file-manager')}
           formatFileSize={formatFileSize}

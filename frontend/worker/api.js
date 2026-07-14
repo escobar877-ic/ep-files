@@ -618,7 +618,23 @@ async function persistUpload({ request, env, context, user, name, size, contentT
       INSERT INTO files (name, storage_key, size, content_type, owner_id, folder_id, created_at, updated_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(safeName, key, storedObject.size, contentType, user.id, folder?.id ?? null, timestamp, timestamp).run();
-    const stored = await fileRow(env.DB, result.meta.last_row_id);
+    const stored = {
+      id: Number(result.meta.last_row_id),
+      name: safeName,
+      storage_key: key,
+      size: Number(storedObject.size),
+      content_type: contentType,
+      owner_id: Number(user.id),
+      owner_email: user.email,
+      folder_id: folder?.id ?? null,
+      is_public: 0,
+      public_token: null,
+      public_expires_at: null,
+      is_deleted: 0,
+      deleted_at: null,
+      created_at: timestamp,
+      updated_at: timestamp,
+    };
     const historyPromise = addHistory(env.DB, stored, user, 'upload', null, null, 'Файл загружен', request);
     if (context?.waitUntil) context.waitUntil(historyPromise.catch((error) => console.error('Upload history error', error)));
     else await historyPromise;

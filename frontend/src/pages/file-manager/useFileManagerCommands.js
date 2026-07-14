@@ -26,9 +26,13 @@ export function useUploadCommand({ currentFolderId, loadData, taskQueue }) {
       try {
         await uploadFileApi(cleanFile, {
           folderId: targetFolderId,
-          onProgress: ({ loaded, total, percent }) => taskQueue.updateTask(taskId, {
+          onProgress: ({ loaded, total, percent, phase }) => taskQueue.updateTask(taskId, {
             progress: percent,
-            subText: `${formatTransferSize(loaded)} из ${formatTransferSize(total)}`,
+            status: phase,
+            title: phase === 'saving' ? 'Сохранение файла...' : 'Загрузка файла...',
+            subText: phase === 'saving'
+              ? `${formatTransferSize(total)} передано. Сервер сохраняет файл`
+              : `${formatTransferSize(loaded)} из ${formatTransferSize(total)}`,
           }),
         });
         uploadedAny = true;

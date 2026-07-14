@@ -2,7 +2,7 @@ import { Box, CircularProgress, LinearProgress, Typography } from '@mui/material
 import { CheckCircle, ErrorOutline, HourglassEmpty } from '@mui/icons-material';
 import { alpha, useTheme } from '@mui/material/styles';
 
-const activeStatuses = new Set(['uploading', 'downloading', 'deleting']);
+const activeStatuses = new Set(['uploading', 'saving', 'downloading', 'deleting']);
 
 function getStatusConfig(task, theme) {
   if (task.status === 'success') {
@@ -27,7 +27,9 @@ function getStatusConfig(task, theme) {
     color: theme.palette.primary.main,
     bg: alpha(theme.palette.primary.main, 0.1),
     border: alpha(theme.palette.primary.main, 0.24),
-    label: task.status === 'uploading' ? `${Math.round(task.progress || 0)}%` : 'В процессе',
+    label: task.status === 'uploading'
+      ? `${Math.round(task.progress || 0)}%`
+      : task.status === 'saving' ? 'Сохранение' : 'В процессе',
     icon: <HourglassEmpty fontSize="small" />,
   };
 }
@@ -73,10 +75,10 @@ export default function TaskStatusItem({ task }) {
         <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mt: 0.25, overflowWrap: 'anywhere', whiteSpace: 'normal', lineHeight: 1.35 }}>
           {task.subText || task.title}
         </Typography>
-        {task.status === 'uploading' && (
+        {(task.status === 'uploading' || task.status === 'saving') && (
           <LinearProgress
-            variant="determinate"
-            value={task.progress || 0}
+            variant={task.status === 'saving' ? 'indeterminate' : 'determinate'}
+            value={task.status === 'uploading' ? task.progress || 0 : undefined}
             sx={{ mt: 1, height: 5, backgroundColor: (currentTheme) => currentTheme.ep.subtle }}
           />
         )}

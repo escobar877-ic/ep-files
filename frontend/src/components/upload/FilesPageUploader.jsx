@@ -2,9 +2,10 @@ import { useRef, useState } from 'react';
 import { Box, LinearProgress, Paper, Typography } from '@mui/material';
 import { CloudUpload } from '@mui/icons-material';
 
-export default function FilesPageUploader({ onFileDropped, isUploading = false, uploadProgress = 0, compact = false }) {
+export default function FilesPageUploader({ onFileDropped, isUploading = false, uploadProgress = 0, uploadPhase = 'idle', compact = false }) {
   const fileInputRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
+  const isSaving = isUploading && uploadPhase === 'saving';
   const openFileDialog = () => !isUploading && fileInputRef.current?.click();
   const stopDrag = (event) => { event.preventDefault(); event.stopPropagation(); };
   const markDragging = (event) => { stopDrag(event); if (!isUploading) setIsDragging(true); };
@@ -24,9 +25,9 @@ export default function FilesPageUploader({ onFileDropped, isUploading = false, 
       <input ref={fileInputRef} type="file" style={{ display: 'none' }} onChange={handleFileChange} />
       <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
         <CloudUpload sx={{ fontSize: compact ? 34 : { xs: 36, sm: 44 }, color: 'primary.main' }} />
-        <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>{isUploading ? 'Загрузка файла...' : 'Перетащите файл сюда'}</Typography>
-        <Typography variant="body2" color="text.secondary">или нажмите на область, чтобы выбрать файл</Typography>
-        {isUploading && <Box sx={{ width: '100%', mt: 2 }}><LinearProgress variant="determinate" value={uploadProgress} sx={{ height: 8, borderRadius: 4 }} /><Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>{uploadProgress}%</Typography></Box>}
+        <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>{isSaving ? 'Сохранение на сервере...' : isUploading ? 'Загрузка файла...' : 'Перетащите файл сюда'}</Typography>
+        <Typography variant="body2" color="text.secondary">{isSaving ? 'Файл передан, выполняется проверка и сохранение' : 'или нажмите на область, чтобы выбрать файл'}</Typography>
+        {isUploading && <Box sx={{ width: '100%', mt: 2 }}><LinearProgress variant={isSaving ? 'indeterminate' : 'determinate'} value={isSaving ? undefined : uploadProgress} sx={{ height: 8, borderRadius: 4 }} /><Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>{isSaving ? 'СОХРАНЕНИЕ' : `${uploadProgress}%`}</Typography></Box>}
       </Box>
     </Paper>
   );

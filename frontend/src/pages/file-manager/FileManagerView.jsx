@@ -269,7 +269,7 @@ function ItemMenu({ anchorEl, anchorPosition, selectedItem, currentUserEmail, ca
 
 function TaskWidget({ tasks, isMinimized, setIsMinimized, clearTasks }) {
   if (tasks.length === 0) return null;
-  const activeCount = tasks.filter((task) => ['uploading', 'downloading', 'deleting'].includes(task.status)).length;
+  const activeCount = tasks.filter((task) => ['uploading', 'saving', 'downloading', 'deleting'].includes(task.status)).length;
   const errorCount = tasks.filter((task) => task.status === 'error').length;
   return (
     <Paper elevation={4} sx={{ position: 'fixed', bottom: { xs: 12, sm: 24 }, right: { xs: 12, sm: 24 }, left: { xs: 12, sm: 'auto' }, width: { xs: 'auto', sm: 360 }, backgroundColor: (theme) => theme.ep.panel, zIndex: 2000, overflow: 'hidden', border: '1px solid', borderColor: 'divider', display: 'flex', flexDirection: 'column' }}>
@@ -339,6 +339,25 @@ export default function FileManagerView(props) {
     globalDragDepth.current = 0;
     setGlobalDropActive(false);
   };
+  React.useEffect(() => {
+    const reset = () => {
+      globalDragDepth.current = 0;
+      setGlobalDropActive(false);
+    };
+    const resetWhenHidden = () => {
+      if (document.hidden) reset();
+    };
+    window.addEventListener('drop', reset, true);
+    window.addEventListener('dragend', reset, true);
+    window.addEventListener('blur', reset);
+    document.addEventListener('visibilitychange', resetWhenHidden);
+    return () => {
+      window.removeEventListener('drop', reset, true);
+      window.removeEventListener('dragend', reset, true);
+      window.removeEventListener('blur', reset);
+      document.removeEventListener('visibilitychange', resetWhenHidden);
+    };
+  }, []);
   const handleGlobalDragEnter = (event) => {
     if (!hasDraggedSystemFiles(event)) return;
     event.preventDefault();
@@ -353,8 +372,12 @@ export default function FileManagerView(props) {
     setGlobalDropActive(true);
   };
   const handleGlobalDragLeave = (event) => {
-    if (!hasDraggedSystemFiles(event)) return;
+    if (!hasDraggedSystemFiles(event) && globalDragDepth.current === 0) return;
     event.preventDefault();
+    if (!event.relatedTarget || !event.currentTarget.contains(event.relatedTarget)) {
+      resetGlobalDrop();
+      return;
+    }
     globalDragDepth.current = Math.max(0, globalDragDepth.current - 1);
     if (globalDragDepth.current === 0) setGlobalDropActive(false);
   };

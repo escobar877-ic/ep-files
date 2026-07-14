@@ -15,14 +15,15 @@ function formatFileSize(bytes) {
 
 function UploadItem({ uploadFile }) {
   const completed = uploadFile.status === 'completed';
+  const saving = uploadFile.status === 'saving';
   return (
     <Paper sx={{ p: 2, mb: 1, borderRadius: '8px', backgroundColor: completed ? '#e8f5e9' : '#fff', border: '1px solid', borderColor: completed ? '#4CAF50' : '#e0e0e0' }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
-        {completed ? <CheckCircle sx={{ color: '#4CAF50', fontSize: 24 }} /> : <Typography variant="caption" sx={{ color: '#2196F3', width: 36 }}>{Math.round(uploadFile.progress)}%</Typography>}
+        {completed ? <CheckCircle sx={{ color: '#4CAF50', fontSize: 24 }} /> : <Typography variant="caption" sx={{ color: '#2196F3', width: saving ? 76 : 36 }}>{saving ? 'Сохранение' : `${Math.round(uploadFile.progress)}%`}</Typography>}
         <Box sx={{ flex: 1 }}><Typography variant="body2" sx={{ fontWeight: 500 }}>{uploadFile.file.name}</Typography><Typography variant="caption" color="text.secondary">{formatFileSize(uploadFile.file.size)}</Typography></Box>
         {completed && <Typography variant="caption" sx={{ color: '#4CAF50', fontWeight: 600 }}>Загружено</Typography>}
       </Box>
-      {!completed && <LinearProgress variant="determinate" value={uploadFile.progress} sx={{ height: 6, borderRadius: 3 }} />}
+      {!completed && <LinearProgress variant={saving ? 'indeterminate' : 'determinate'} value={saving ? undefined : uploadFile.progress} sx={{ height: 6, borderRadius: 3 }} />}
     </Paper>
   );
 }
@@ -48,7 +49,7 @@ export default function FileUpload({ onUploadComplete, onUploadError, folderId =
   const [errors, setErrors] = useState([]);
   const uploadFileToDjango = useCallback(async (uploadFile) => {
     try {
-      const response = await uploadFileApi(uploadFile.file, { folderId, onProgress: ({ percent }) => setUploadingFiles((prev) => prev.map((file) => (file.id === uploadFile.id ? { ...file, progress: percent } : file))) });
+      const response = await uploadFileApi(uploadFile.file, { folderId, onProgress: ({ percent, phase }) => setUploadingFiles((prev) => prev.map((file) => (file.id === uploadFile.id ? { ...file, progress: percent, status: phase } : file))) });
       setUploadingFiles((prev) => prev.map((file) => (file.id === uploadFile.id ? { ...file, status: 'completed', progress: 100 } : file)));
       onUploadComplete?.(response.data);
       setTimeout(() => setUploadingFiles((prev) => prev.filter((file) => file.id !== uploadFile.id)), 2000);
