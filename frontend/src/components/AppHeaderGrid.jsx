@@ -6,9 +6,9 @@ export default function AppHeaderGrid({ children, sx = {} }) {
       sx={{
         width: '100%',
         minHeight: 86,
-        maxWidth: 1340,
+        maxWidth: 1480,
         mx: 'auto',
-        px: { xs: 2, md: 5 },
+        px: { xs: 2, md: 3 },
         display: 'grid',
         gridTemplateColumns: 'minmax(0, 1fr) auto minmax(0, 1fr)',
         alignItems: 'center',
