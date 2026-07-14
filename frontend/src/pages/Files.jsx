@@ -104,6 +104,12 @@ function StatsCard({ user, stats }) {
 }
 
 function ChangePasswordCard({ form, loading, open, error, onChange, onSubmit, onToggle }) {
+  const [currentPasswordEditable, setCurrentPasswordEditable] = useState(false);
+  const handleToggle = () => {
+    setCurrentPasswordEditable(false);
+    onToggle();
+  };
+
   return (
     <Paper elevation={0} sx={{ ...panelSx, p: { xs: 2.5, sm: 4 }, borderRadius: '16px' }}>
       <Box sx={{ display: 'flex', alignItems: { xs: 'stretch', sm: 'center' }, justifyContent: 'space-between', gap: 2, flexDirection: { xs: 'column', sm: 'row' } }}>
@@ -111,14 +117,32 @@ function ChangePasswordCard({ form, loading, open, error, onChange, onSubmit, on
           <Typography variant="h6" sx={{ fontWeight: 800, color: 'text.primary' }}>Смена пароля</Typography>
           <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5 }}>После изменения понадобится войти заново.</Typography>
         </Box>
-        <Button variant={open ? 'outlined' : 'contained'} onClick={onToggle} fullWidth={false} sx={{ alignSelf: { xs: 'stretch', sm: 'center' }, ml: { sm: 'auto' }, minWidth: { sm: 170 }, flexShrink: 0 }} endIcon={<ExpandMore sx={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 160ms ease' }} />}>
+        <Button variant={open ? 'outlined' : 'contained'} onClick={handleToggle} fullWidth={false} sx={{ alignSelf: { xs: 'stretch', sm: 'center' }, ml: { sm: 'auto' }, minWidth: { sm: 170 }, flexShrink: 0 }} endIcon={<ExpandMore sx={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 160ms ease' }} />}>
           {open ? 'Скрыть' : 'Сменить пароль'}
         </Button>
       </Box>
       <Collapse in={open} unmountOnExit>
-        <Box component="form" onSubmit={onSubmit} sx={{ display: 'grid', gap: 2, mt: 3 }}>
+        <Box component="form" autoComplete="off" onSubmit={onSubmit} sx={{ display: 'grid', gap: 2, mt: 3 }}>
           {error && <Alert severity="error">{error}</Alert>}
-          <TextField fullWidth label="Текущий пароль" type="password" autoComplete="current-password" value={form.current_password} onChange={(event) => onChange('current_password', event.target.value)} disabled={loading} />
+          <TextField
+            fullWidth
+            label="Текущий пароль"
+            type="password"
+            name="ep-current-password-manual"
+            autoComplete="off"
+            value={form.current_password}
+            onFocus={() => setCurrentPasswordEditable(true)}
+            onChange={(event) => onChange('current_password', event.target.value)}
+            disabled={loading}
+            slotProps={{
+              htmlInput: {
+                readOnly: !currentPasswordEditable,
+                'data-1p-ignore': 'true',
+                'data-lpignore': 'true',
+                'data-form-type': 'other',
+              },
+            }}
+          />
           <TextField fullWidth label="Новый пароль" type="password" autoComplete="new-password" value={form.new_password} onChange={(event) => onChange('new_password', event.target.value)} disabled={loading} />
           <TextField fullWidth label="Повторите новый пароль" type="password" autoComplete="new-password" value={form.confirm_password} onChange={(event) => onChange('confirm_password', event.target.value)} disabled={loading} />
           <Button type="submit" variant="contained" startIcon={loading ? <CircularProgress color="inherit" size={18} /> : <LockReset />} disabled={loading} sx={{ justifySelf: { xs: 'stretch', sm: 'flex-start' } }}>
@@ -313,6 +337,11 @@ export default function Files({ onPreviewFile }) {
     setPasswordForm((prev) => ({ ...prev, [field]: value }));
     setPasswordError('');
   };
+  const handlePasswordToggle = () => {
+    setPasswordForm({ current_password: '', new_password: '', confirm_password: '' });
+    setPasswordError('');
+    setPasswordOpen((prev) => !prev);
+  };
   const handlePasswordSubmit = async (event) => {
     event.preventDefault();
     setPasswordLoading(true);
@@ -350,7 +379,7 @@ export default function Files({ onPreviewFile }) {
                 error={passwordError}
                 onChange={handlePasswordChange}
                 onSubmit={handlePasswordSubmit}
-                onToggle={() => setPasswordOpen((prev) => !prev)}
+                onToggle={handlePasswordToggle}
               />
             </Box>
           </Box>
