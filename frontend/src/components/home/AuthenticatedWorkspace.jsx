@@ -84,7 +84,7 @@ function RecentFiles({ files, loading, formatFileSize, formatDate, onOpen, onUpl
             <Typography className="ep-display" sx={{ color: 'text.primary', fontSize: { xs: '2.5rem', md: '3.4rem' }, lineHeight: 0.9 }}>
               ФАЙЛОВ ПОКА НЕТ
             </Typography>
-            <Button variant="contained" startIcon={<CloudUpload />} onClick={onUploadClick} sx={{ mt: 3 }}>
+            <Button variant="contained" startIcon={<CloudUpload />} onClick={onUploadClick} sx={{ mt: 3, fontFamily: (theme) => theme.ep.monoFont, fontWeight: 700 }}>
               Загрузить первый файл
             </Button>
           </Box>
@@ -242,7 +242,7 @@ export default function AuthenticatedWorkspace({
         <Box
           sx={{
             display: 'grid',
-            gridTemplateColumns: { xs: 'minmax(0, 1fr)', lg: 'minmax(0, 1.55fr) minmax(320px, 0.75fr)' },
+            gridTemplateColumns: { xs: 'minmax(0, 1fr)', lg: 'minmax(0, 2fr) minmax(320px, 1fr)' },
             border: '1px solid',
             borderColor: 'divider',
             bgcolor: 'background.paper',

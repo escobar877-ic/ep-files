@@ -55,6 +55,8 @@ The user-facing application uses React Router inside a client-only vinext shell.
 | `/admin` | User, storage, and report administration |
 | `/public/:resourceType/:token` | Public file or folder access |
 
+Public access pages inherit the same device-aware light or dark theme as the rest of the application. Avatar changes on `/files` open a circular crop editor with drag and zoom controls before the optimized image is uploaded.
+
 ## API Client
 
 `src/api/axios.js` uses `/api` by default and includes browser credentials. The Worker session is stored in an HTTP-only cookie, so application code never reads the session token.

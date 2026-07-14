@@ -29,6 +29,7 @@ export default function HeaderProfileButton({ user, sx, ...props }) {
             color: 'primary.contrastText',
             border: '1px solid',
             borderColor: 'currentColor',
+            borderRadius: '50% !important',
             fontSize: '0.72rem',
             fontWeight: 800,
             flexShrink: 0,

@@ -281,23 +281,38 @@ function buildComponents(tokens, mode) {
 function getInitialMode() {
   if (typeof window === 'undefined') return 'light';
   const savedMode = localStorage.getItem(THEME_STORAGE_KEY);
-  return savedMode === 'dark' || savedMode === 'light' ? savedMode : 'light';
+  if (savedMode === 'dark' || savedMode === 'light') return savedMode;
+  return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }
 
 export function AppThemeProvider({ children }) {
   const [mode, setMode] = useState(getInitialMode);
+  const [followsSystem, setFollowsSystem] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    const savedMode = localStorage.getItem(THEME_STORAGE_KEY);
+    return savedMode !== 'dark' && savedMode !== 'light';
+  });
   const theme = useMemo(() => createAppTheme(mode), [mode]);
   const value = useMemo(() => ({
     mode,
-    followsSystem: false,
+    followsSystem,
     toggleMode: () => {
+      setFollowsSystem(false);
       setMode((currentMode) => {
         const nextMode = currentMode === 'dark' ? 'light' : 'dark';
         window.localStorage.setItem(THEME_STORAGE_KEY, nextMode);
         return nextMode;
       });
     },
-  }), [mode]);
+  }), [followsSystem, mode]);
+
+  useEffect(() => {
+    if (!followsSystem || typeof window === 'undefined' || !window.matchMedia) return undefined;
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const syncMode = (event) => setMode(event.matches ? 'dark' : 'light');
+    mediaQuery.addEventListener('change', syncMode);
+    return () => mediaQuery.removeEventListener('change', syncMode);
+  }, [followsSystem]);
 
   useEffect(() => {
     document.documentElement.dataset.theme = mode;

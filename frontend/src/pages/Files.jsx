@@ -10,7 +10,10 @@ import TaskStatusItem from '../components/TaskStatusItem';
 import AppHeaderGrid from '../components/AppHeaderGrid';
 import BrandWordmark from '../components/BrandWordmark';
 import FileTypeIcon from '../components/FileTypeIcon';
+import AvatarCropDialog from '../components/AvatarCropDialog';
 import { getFileExtension } from '../components/fileTypeConfig';
+
+const EMPTY_AVATAR_CROP = { source: '', name: '' };
 
 function formatFileSize(bytes) {
   if (!bytes || bytes === 0) return '0 Б';
@@ -44,7 +47,7 @@ function ProfileCard({ user, isAdmin, displayName, themeMode, avatarUploading, o
   return (
     <Paper elevation={0} sx={{ ...panelSx, p: { xs: 2.5, sm: 4 }, borderRadius: '16px', textAlign: 'center' }}>
       <Box sx={{ position: 'relative', width: { xs: 96, sm: 112 }, height: { xs: 96, sm: 112 }, mx: 'auto', mb: 2 }}>
-        <Avatar src={user?.avatar_url || undefined} sx={{ width: { xs: 96, sm: 112 }, height: { xs: 96, sm: 112 }, bgcolor: 'primary.main', color: 'primary.contrastText', fontSize: { xs: '2.2rem', sm: '2.6rem' }, fontWeight: 800 }}>{(user?.name || user?.email || 'U')[0]?.toUpperCase()}</Avatar>
+        <Avatar src={user?.avatar_url || undefined} sx={{ width: { xs: 96, sm: 112 }, height: { xs: 96, sm: 112 }, bgcolor: 'primary.main', color: 'primary.contrastText', borderRadius: '50% !important', fontSize: { xs: '2.2rem', sm: '2.6rem' }, fontWeight: 800 }}>{(user?.name || user?.email || 'U')[0]?.toUpperCase()}</Avatar>
         <Tooltip title="Загрузить аватар">
           <IconButton component="label" disabled={avatarUploading} sx={{ position: 'absolute', right: -6, bottom: 6, bgcolor: 'primary.main', color: 'primary.contrastText', border: '2px solid', borderColor: 'background.paper', '&:hover': { bgcolor: 'primary.light' } }} size="small">
             {avatarUploading ? <CircularProgress size={18} color="inherit" /> : <PhotoCamera fontSize="small" />}
@@ -235,6 +238,11 @@ export default function Files({ onPreviewFile }) {
   const [passwordLoading, setPasswordLoading] = useState(false);
   const [passwordError, setPasswordError] = useState('');
   const [avatarUploading, setAvatarUploading] = useState(false);
+  const [avatarCrop, setAvatarCrop] = useState(EMPTY_AVATAR_CROP);
+
+  useEffect(() => () => {
+    if (avatarCrop.source) URL.revokeObjectURL(avatarCrop.source);
+  }, [avatarCrop.source]);
 
   useEffect(() => {
     Promise.all([api.get('/storage/stats/'), api.get('/favorites/all/')]).then(([statsRes, favsRes]) => {
@@ -256,10 +264,23 @@ export default function Files({ onPreviewFile }) {
 
   const isAdmin = Boolean(user?.is_staff || user?.is_superuser);
   const handleLogout = () => { logout(); navigate('/login'); };
-  const handleAvatarChange = async (event) => {
+  const handleAvatarChange = (event) => {
     const avatar = event.target.files?.[0];
     event.target.value = '';
     if (!avatar) return;
+
+    if (!avatar.type.startsWith('image/')) {
+      setError('Выберите изображение для аватара');
+      return;
+    }
+
+    setError('');
+    setAvatarCrop({ source: URL.createObjectURL(avatar), name: avatar.name });
+  };
+
+  const closeAvatarCrop = () => setAvatarCrop(EMPTY_AVATAR_CROP);
+
+  const handleAvatarCropConfirm = async (avatar) => {
     const formData = new FormData();
     formData.append('avatar', avatar);
     try {
@@ -267,8 +288,11 @@ export default function Files({ onPreviewFile }) {
       const response = await api.post('/auth/avatar/', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
       updateUser(response.data.user);
       setError('');
+      closeAvatarCrop();
     } catch (err) {
-      setError(getApiErrorMessage(err, 'Не удалось загрузить аватар'));
+      const message = getApiErrorMessage(err, 'Не удалось загрузить аватар');
+      setError(message);
+      throw new Error(message);
     } finally {
       setAvatarUploading(false);
     }
@@ -333,6 +357,13 @@ export default function Files({ onPreviewFile }) {
         </Box>
         <FavoritesSection favorites={favorites} onDownload={handleDownloadFav} onPreview={onPreviewFile} />
         <TaskWidget tasks={tasks} clearTasks={() => setTasks([])} />
+        <AvatarCropDialog
+          open={Boolean(avatarCrop.source)}
+          source={avatarCrop.source}
+          uploading={avatarUploading}
+          onClose={closeAvatarCrop}
+          onConfirm={handleAvatarCropConfirm}
+        />
       </Container>
     </Box>
   );

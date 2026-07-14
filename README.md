@@ -22,7 +22,8 @@ EP Files is a personal file workspace for uploading, organizing, previewing, sha
 - User-to-user read and read/write permissions with folder inheritance
 - In-browser editing for supported text files
 - File reports and an administrator dashboard
-- Responsive light and dark themes
+- Avatar cropping with drag and zoom controls before upload
+- Responsive light and dark themes that follow the device preference by default
 
 ## Technology
 
