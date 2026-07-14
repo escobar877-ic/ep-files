@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Slider, Typography } from '@mui/material';
 import { Crop, RestartAlt, ZoomIn } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
@@ -15,10 +15,19 @@ function loadImage(source) {
   });
 }
 
-async function createCroppedAvatar(source, cropPixels) {
-  if (!cropPixels) throw new Error('Выберите область изображения');
+function sourceRectFromPercentages(image, cropArea) {
+  const x = Math.max(0, Math.round((image.naturalWidth * cropArea.x) / 100));
+  const y = Math.max(0, Math.round((image.naturalHeight * cropArea.y) / 100));
+  const width = Math.min(image.naturalWidth - x, Math.max(1, Math.round((image.naturalWidth * cropArea.width) / 100)));
+  const height = Math.min(image.naturalHeight - y, Math.max(1, Math.round((image.naturalHeight * cropArea.height) / 100)));
+  return { x, y, width, height };
+}
+
+async function createCroppedAvatar(source, cropArea) {
+  if (!cropArea) throw new Error('Выберите область изображения');
 
   const image = await loadImage(source);
+  const sourceRect = sourceRectFromPercentages(image, cropArea);
   const canvas = document.createElement('canvas');
   canvas.width = OUTPUT_SIZE;
   canvas.height = OUTPUT_SIZE;
@@ -28,12 +37,15 @@ async function createCroppedAvatar(source, cropPixels) {
 
   context.imageSmoothingEnabled = true;
   context.imageSmoothingQuality = 'high';
+  context.beginPath();
+  context.arc(OUTPUT_SIZE / 2, OUTPUT_SIZE / 2, OUTPUT_SIZE / 2, 0, Math.PI * 2);
+  context.clip();
   context.drawImage(
     image,
-    cropPixels.x,
-    cropPixels.y,
-    cropPixels.width,
-    cropPixels.height,
+    sourceRect.x,
+    sourceRect.y,
+    sourceRect.width,
+    sourceRect.height,
     0,
     0,
     OUTPUT_SIZE,
@@ -49,7 +61,7 @@ export default function AvatarCropDialog({ open, source, uploading, onClose, onC
   const theme = useTheme();
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
-  const [cropPixels, setCropPixels] = useState(null);
+  const [cropArea, setCropArea] = useState(null);
   const [preparing, setPreparing] = useState(false);
   const [error, setError] = useState('');
 
@@ -57,19 +69,15 @@ export default function AvatarCropDialog({ open, source, uploading, onClose, onC
     if (!open) return;
     setCrop({ x: 0, y: 0 });
     setZoom(1);
-    setCropPixels(null);
+    setCropArea(null);
     setError('');
   }, [open, source]);
-
-  const handleCropComplete = useCallback((_, pixels) => {
-    setCropPixels(pixels);
-  }, []);
 
   const handleSave = async () => {
     try {
       setPreparing(true);
       setError('');
-      const file = await createCroppedAvatar(source, cropPixels);
+      const file = await createCroppedAvatar(source, cropArea);
       await onConfirm(file);
     } catch (err) {
       setError(err.message || 'Не удалось подготовить аватар');
@@ -81,7 +89,14 @@ export default function AvatarCropDialog({ open, source, uploading, onClose, onC
   const busy = preparing || uploading;
 
   return (
-    <Dialog open={open} onClose={busy ? undefined : onClose} maxWidth="sm" fullWidth aria-labelledby="avatar-crop-title">
+    <Dialog
+      open={open}
+      onClose={busy ? undefined : onClose}
+      maxWidth="sm"
+      fullWidth
+      aria-labelledby="avatar-crop-title"
+      slotProps={{ paper: { sx: { animation: 'none' } } }}
+    >
       <DialogTitle id="avatar-crop-title" sx={{ display: 'flex', alignItems: 'center', gap: 1.25, borderBottom: '1px solid', borderColor: 'divider' }}>
         <Crop color="primary" />
         Обрезать аватар
@@ -104,10 +119,11 @@ export default function AvatarCropDialog({ open, source, uploading, onClose, onC
               zoom={zoom}
               aspect={1}
               cropShape="round"
+              roundCropAreaPixels
               showGrid={false}
               objectFit="contain"
               onCropChange={setCrop}
-              onCropComplete={handleCropComplete}
+              onCropAreaChange={(area) => setCropArea(area)}
               onZoomChange={setZoom}
               mediaProps={{ alt: 'Предпросмотр кадрирования аватара' }}
               style={{
@@ -143,7 +159,7 @@ export default function AvatarCropDialog({ open, source, uploading, onClose, onC
       </DialogContent>
       <DialogActions sx={{ px: { xs: 2, sm: 3 }, py: 2, borderTop: '1px solid', borderColor: 'divider' }}>
         <Button onClick={onClose} disabled={busy}>Отмена</Button>
-        <Button variant="contained" onClick={handleSave} disabled={busy || !cropPixels} startIcon={busy ? <CircularProgress size={18} color="inherit" /> : <Crop />}>
+        <Button variant="contained" onClick={handleSave} disabled={busy || !cropArea} startIcon={busy ? <CircularProgress size={18} color="inherit" /> : <Crop />}>
           {uploading ? 'Загрузка...' : preparing ? 'Подготовка...' : 'Сохранить'}
         </Button>
       </DialogActions>
