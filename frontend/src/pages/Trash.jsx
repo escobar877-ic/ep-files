@@ -19,6 +19,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  Tooltip,
   Typography,
 } from '@mui/material';
 import {
@@ -95,17 +96,17 @@ function TrashHeader({ user, navigate }) {
 
 function TrashHero({ currentFolder, itemsCount, totalSize, busyId, onClear }) {
   return (
-    <Paper elevation={0} sx={{ ...panelSx, p: { xs: 2.25, md: 4 }, overflow: 'hidden', position: 'relative' }}>
+    <Paper elevation={0} sx={{ ...panelSx, p: { xs: 2.25, sm: 3, md: 4 }, overflow: 'hidden', position: 'relative' }}>
       <Box sx={{ display: 'flex', alignItems: { xs: 'stretch', md: 'center' }, justifyContent: 'space-between', gap: { xs: 2, md: 3 }, flexDirection: { xs: 'column', md: 'row' }, position: 'relative', zIndex: 1 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, minWidth: 0 }}>
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '52px minmax(0, 1fr)', sm: '64px minmax(0, 1fr)' }, alignItems: 'center', gap: { xs: 1.5, sm: 2 }, minWidth: 0 }}>
           <Box sx={{ width: { xs: 52, sm: 64 }, height: { xs: 52, sm: 64 }, backgroundColor: 'rgba(0,0,242,0.08)', border: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <RestoreFromTrash sx={{ fontSize: { xs: 30, sm: 36 }, color: 'primary.main' }} />
           </Box>
-          <Box sx={{ minWidth: 0 }}>
-            <Typography className="ep-display" sx={{ color: 'text.primary', lineHeight: 0.9, fontSize: { xs: '2.4rem', sm: '4rem' }, overflowWrap: 'anywhere' }}>
+          <Box sx={{ minWidth: 0, display: 'grid', rowGap: { xs: 1, sm: 1.25 } }}>
+            <Typography className="ep-display" sx={{ display: 'block', m: 0, color: 'text.primary', lineHeight: 1.04, fontSize: { xs: '2.15rem', sm: '3.35rem', lg: '3.75rem' }, overflowWrap: 'anywhere' }}>
               {currentFolder ? currentFolder.name : 'Корзина файлов'}
             </Typography>
-            <Typography variant="body2" sx={{ color: (theme) => theme.palette.mode === 'dark' ? theme.ep.warmMuted : theme.palette.text.secondary, mt: 0.75, fontWeight: 600 }}>
+            <Typography component="p" variant="body2" sx={{ display: 'block', m: 0, color: (theme) => theme.palette.mode === 'dark' ? theme.ep.warmMuted : theme.palette.text.secondary, fontWeight: 700, fontSize: { xs: '0.72rem', sm: '0.8rem' }, lineHeight: 1.5 }}>
               {itemsCount} объектов · {formatFileSize(totalSize)}
             </Typography>
           </Box>
@@ -136,34 +137,38 @@ function EmptyTrash() {
       elevation={0}
       sx={{
         ...panelSx,
-        py: 10,
+        minHeight: { xs: 280, md: 320 },
+        py: { xs: 6, md: 8 },
         px: 3,
         borderRadius: '12px',
         textAlign: 'center',
         backgroundColor: (theme) => theme.palette.mode === 'dark' ? theme.ep.elevated : theme.ep.panel,
+        display: 'grid',
+        placeItems: 'center',
       }}
     >
-      <Box
-        sx={{
-          width: 88,
-          height: 88,
-          mx: 'auto',
-          mb: 2,
-          borderRadius: '50%',
-          bgcolor: (theme) => theme.palette.mode === 'dark' ? alpha(theme.ep.warm, 0.12) : alpha(theme.palette.primary.main, 0.12),
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        <FolderOff sx={{ fontSize: 44, color: (theme) => theme.palette.mode === 'dark' ? theme.ep.warmMuted : theme.palette.text.secondary }} />
+      <Box sx={{ width: '100%', maxWidth: 560, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <Box
+          sx={{
+            width: 88,
+            height: 88,
+            mb: 2.5,
+            borderRadius: '50%',
+            bgcolor: (theme) => theme.palette.mode === 'dark' ? alpha(theme.ep.warm, 0.12) : alpha(theme.palette.primary.main, 0.12),
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <FolderOff sx={{ fontSize: 44, color: (theme) => theme.palette.mode === 'dark' ? theme.ep.warmMuted : theme.palette.text.secondary }} />
+        </Box>
+        <Typography variant="h5" sx={{ display: 'block', m: 0, color: (theme) => theme.palette.mode === 'dark' ? theme.ep.warm : theme.palette.text.primary, fontWeight: 800, fontSize: { xs: '1.45rem', sm: '1.7rem' }, lineHeight: 1.2 }}>
+          Корзина пуста
+        </Typography>
+        <Typography variant="body2" sx={{ display: 'block', m: 0, mt: 1.5, color: (theme) => theme.palette.mode === 'dark' ? theme.ep.warmMuted : theme.palette.text.secondary, fontWeight: 500, fontSize: { xs: '0.82rem', sm: '0.9rem' }, lineHeight: 1.65 }}>
+          Удаленные файлы и непустые папки появятся здесь.
+        </Typography>
       </Box>
-      <Typography variant="h5" sx={{ fontWeight: 800, color: (theme) => theme.palette.mode === 'dark' ? theme.ep.warm : theme.palette.text.primary, mb: 1, fontSize: { xs: '1.45rem', sm: '1.7rem' } }}>
-        Корзина пуста
-      </Typography>
-      <Typography variant="body2" sx={{ color: (theme) => theme.palette.mode === 'dark' ? theme.ep.warmMuted : theme.palette.text.secondary, fontWeight: 500, fontSize: { xs: '0.82rem', sm: '0.9rem' }, lineHeight: 1.6 }}>
-        Удаленные файлы и непустые папки появятся здесь.
-      </Typography>
     </Paper>
   );
 }
