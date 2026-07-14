@@ -56,10 +56,6 @@ export default function useFileManagerData(currentFolderId, searchQuery) {
   }, [currentFolderId]);
 
   useEffect(() => {
-    if (!searchQuery.trim()) loadData();
-  }, [currentFolderId, loadData, searchQuery]);
-
-  useEffect(() => {
     if (!searchQuery.trim()) {
       loadData();
       return;

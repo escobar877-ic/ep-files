@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, Container } from '@mui/material';
-import api from '../api/axios';
+import api, { uploadFileApi } from '../api/axios';
 import { useAuth } from '../context/authContextValue';
 import { getApiErrorMessage } from './file-manager/fileManagerHelpers';
 import {
@@ -29,15 +29,12 @@ function formatDate(dateValue) {
 }
 
 async function uploadQuickFile({ file, setUploadError, setIsQuickUploading, setQuickUploadProgress, refresh }) {
-  const formData = new FormData();
-  formData.append('file', file);
   try {
     setUploadError('');
     setIsQuickUploading(true);
     setQuickUploadProgress(0);
-    await api.post('/upload/', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-      onUploadProgress: ({ loaded, total }) => total && setQuickUploadProgress(Math.round((loaded * 100) / total)),
+    await uploadFileApi(file, {
+      onProgress: ({ percent }) => setQuickUploadProgress(percent),
     });
     setQuickUploadProgress(100);
     await refresh();

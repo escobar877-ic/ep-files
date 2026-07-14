@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Alert, Box, IconButton, LinearProgress, Paper, Typography } from '@mui/material';
 import { CheckCircle, Close, CloudUpload } from '@mui/icons-material';
-import api from '../../api/axios';
+import { uploadFileApi } from '../../api/axios';
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024;
 
@@ -47,11 +47,8 @@ export default function FileUpload({ onUploadComplete, onUploadError, folderId =
   const [uploadingFiles, setUploadingFiles] = useState([]);
   const [errors, setErrors] = useState([]);
   const uploadFileToDjango = useCallback(async (uploadFile) => {
-    const formData = new FormData();
-    formData.append('file', uploadFile.file);
-    if (folderId) formData.append('folder_id', folderId);
     try {
-      const response = await api.post('/upload/', formData, { headers: { 'Content-Type': 'multipart/form-data' }, onUploadProgress: (event) => setUploadingFiles((prev) => prev.map((file) => (file.id === uploadFile.id ? { ...file, progress: Math.round((event.loaded * 100) / event.total) } : file))) });
+      const response = await uploadFileApi(uploadFile.file, { folderId, onProgress: ({ percent }) => setUploadingFiles((prev) => prev.map((file) => (file.id === uploadFile.id ? { ...file, progress: percent } : file))) });
       setUploadingFiles((prev) => prev.map((file) => (file.id === uploadFile.id ? { ...file, status: 'completed', progress: 100 } : file)));
       onUploadComplete?.(response.data);
       setTimeout(() => setUploadingFiles((prev) => prev.filter((file) => file.id !== uploadFile.id)), 2000);

@@ -74,7 +74,7 @@ const schemaStatements = [
   )`,
 ];
 
-export async function handleApiRequest(request, env) {
+export async function handleApiRequest(request, env, context) {
   try {
     await ensureSchema(env.DB);
     if (request.method === 'OPTIONS') return new Response(null, { status: 204 });
@@ -94,7 +94,7 @@ export async function handleApiRequest(request, env) {
     let match = path.match(/^\/api\/auth\/avatar\/(\d+)$/);
     if (match && method === 'GET') return avatarFile(env, Number(match[1]));
 
-    if (path === '/api/upload' && method === 'POST') return upload(request, env);
+    if (path === '/api/upload' && method === 'POST') return upload(request, env, context);
     if (path === '/api/files' && method === 'GET') return listFiles(request, env);
     if (path === '/api/files/accessible' && method === 'GET') return accessibleFiles(request, env);
     if (path === '/api/folders' && method === 'GET') return listFolders(request, env);
@@ -110,9 +110,9 @@ export async function handleApiRequest(request, env) {
     if (path === '/api/history/recent' && method === 'GET') return userHistory(request, env, true);
 
     match = path.match(/^\/api\/(?:download|files)\/(\d+)(?:\/download)?$/);
-    if (match && method === 'GET') return downloadFile(request, env, Number(match[1]));
+    if (match && method === 'GET') return downloadFile(request, env, Number(match[1]), false, context);
     match = path.match(/^\/api\/preview\/(\d+)$/);
-    if (match && method === 'GET') return downloadFile(request, env, Number(match[1]), true);
+    if (match && method === 'GET') return downloadFile(request, env, Number(match[1]), true, context);
     match = path.match(/^\/api\/files\/(\d+)$/);
     if (match && ['DELETE', 'PATCH'].includes(method)) return mutateFile(request, env, Number(match[1]));
     match = path.match(/^\/api\/files\/(\d+)\/move$/);
@@ -500,50 +500,170 @@ function canWrite(permission) {
   return permission === 'owner' || permission === 'read_write';
 }
 
-async function upload(request, env) {
-  const user = await requireUser(request, env);
-  if (user instanceof Response) return user;
-  const form = await request.formData();
-  const file = form.get('file');
-  if (!(file instanceof File)) return json({ error: 'File not provided' }, 400);
-  if (file.size > MAX_FILE_SIZE) return json({ error: 'Файл слишком большой. Максимальный размер: 100 МБ.' }, 400);
-  const name = sanitizeFilename(file.name);
-  if (FORBIDDEN_EXTENSIONS.has(extension(name))) return json({ error: `Файлы с расширением .${extension(name)} запрещены из соображений безопасности.` }, 400);
+function strongerPermission(current, candidate) {
+  if (candidate === 'read_write' || current === 'read_write') return 'read_write';
+  return candidate || current || null;
+}
+
+function buildAccessSnapshot(permissions, folders) {
+  const folderById = new Map(folders.map((folder) => [Number(folder.id), folder]));
+  const filePermissions = new Map();
+  const folderPermissions = new Map();
+  for (const permission of permissions) {
+    if (permission.file_id != null) {
+      const id = Number(permission.file_id);
+      filePermissions.set(id, strongerPermission(filePermissions.get(id), permission.permission_type));
+    }
+    if (permission.folder_id != null) {
+      const id = Number(permission.folder_id);
+      const current = folderPermissions.get(id);
+      folderPermissions.set(id, {
+        permission_type: strongerPermission(current?.permission_type, permission.permission_type),
+        inherit: Boolean(current?.inherit || permission.inherit),
+      });
+    }
+  }
+  return { filePermissions, folderPermissions, folderById };
+}
+
+function folderPermissionFromSnapshot(folderId, snapshot) {
+  let currentId = folderId == null ? null : Number(folderId);
+  let permission = null;
+  for (let depth = 0; currentId && depth < 64; depth += 1) {
+    const currentPermission = snapshot.folderPermissions.get(currentId);
+    if (currentPermission && (depth === 0 || currentPermission.inherit)) {
+      permission = strongerPermission(permission, currentPermission.permission_type);
+    }
+    currentId = snapshot.folderById.get(currentId)?.parent_id ?? null;
+  }
+  return permission;
+}
+
+function snapshotPermission(user, type, resource, snapshot) {
+  if (Number(resource.owner_id) === Number(user.id)) return 'owner';
+  if (type === 'files') {
+    const direct = snapshot.filePermissions.get(Number(resource.id));
+    return direct || folderPermissionFromSnapshot(resource.folder_id, snapshot);
+  }
+  return folderPermissionFromSnapshot(resource.id, snapshot);
+}
+
+function folderPathFromSnapshot(folderId, folderById) {
+  const names = [];
+  let currentId = Number(folderId);
+  for (let depth = 0; currentId && depth < 64; depth += 1) {
+    const folder = folderById.get(currentId);
+    if (!folder) break;
+    names.unshift(folder.name);
+    currentId = folder.parent_id;
+  }
+  return `/${names.join('/')}`;
+}
+
+function folderSizeResolver(folders, directSizeRows) {
+  const directSizes = new Map(directSizeRows.map((row) => [Number(row.folder_id), Number(row.total || 0)]));
+  const children = new Map();
+  for (const folder of folders) {
+    if (folder.parent_id == null) continue;
+    const parentId = Number(folder.parent_id);
+    children.set(parentId, [...(children.get(parentId) || []), Number(folder.id)]);
+  }
+  const memo = new Map();
+  const resolve = (folderId, visiting = new Set()) => {
+    const id = Number(folderId);
+    if (memo.has(id)) return memo.get(id);
+    if (visiting.has(id)) return directSizes.get(id) || 0;
+    const nextVisiting = new Set(visiting).add(id);
+    const total = (directSizes.get(id) || 0) + (children.get(id) || []).reduce((sum, childId) => sum + resolve(childId, nextVisiting), 0);
+    memo.set(id, total);
+    return total;
+  };
+  return resolve;
+}
+
+function decodedHeader(value) {
+  try {
+    return decodeURIComponent(value || '');
+  } catch {
+    return value || '';
+  }
+}
+
+async function persistUpload({ request, env, context, user, name, size, contentType, folderId, body }) {
+  if (!Number.isInteger(size) || size < 0) return json({ error: 'Некорректный размер файла.' }, 400);
+  if (size > MAX_FILE_SIZE) return json({ error: 'Файл слишком большой. Максимальный размер: 100 МБ.' }, 400);
+  const safeName = sanitizeFilename(name);
+  if (!safeName) return json({ error: 'File not provided' }, 400);
+  if (FORBIDDEN_EXTENSIONS.has(extension(safeName))) return json({ error: `Файлы с расширением .${extension(safeName)} запрещены из соображений безопасности.` }, 400);
+
   const usage = await env.DB.prepare('SELECT COALESCE(SUM(size), 0) AS total FROM files WHERE owner_id = ? AND is_deleted = 0').bind(user.id).first();
-  if (Number(usage.total) + file.size > Number(user.storage_limit)) return json({ error: 'Недостаточно свободного места в хранилище.' }, 400);
-  const folderId = form.get('folder_id');
+  if (Number(usage.total) + size > Number(user.storage_limit)) return json({ error: 'Недостаточно свободного места в хранилище.' }, 400);
+
   let folder = null;
   if (folderId) {
     folder = await folderRow(env.DB, Number(folderId));
     if (!folder || !canWrite(await resourcePermission(env.DB, user, 'folders', folder))) return json({ error: 'Folder not found' }, 404);
   }
+
   const key = `files/${user.id}/${crypto.randomUUID()}`;
   const timestamp = nowIso();
-  await env.FILES.put(key, file.stream(), { httpMetadata: { contentType: file.type || 'application/octet-stream' } });
-  const result = await env.DB.prepare(`
-    INSERT INTO files (name, storage_key, size, content_type, owner_id, folder_id, created_at, updated_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-  `).bind(name, key, file.size, file.type || 'application/octet-stream', user.id, folder?.id ?? null, timestamp, timestamp).run();
-  const stored = await fileRow(env.DB, result.meta.last_row_id);
-  await addHistory(env.DB, stored, user, 'upload', null, null, 'Файл загружен', request);
-  return json({ message: 'File uploaded successfully', file: serializeFile(stored) }, 201);
+  let storedObject;
+  try {
+    storedObject = await env.FILES.put(key, body, { httpMetadata: { contentType } });
+    if (Number(storedObject.size) !== size) {
+      await env.FILES.delete(key);
+      return json({ error: 'Размер загруженного файла не совпал с ожидаемым.' }, 400);
+    }
+    const result = await env.DB.prepare(`
+      INSERT INTO files (name, storage_key, size, content_type, owner_id, folder_id, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `).bind(safeName, key, storedObject.size, contentType, user.id, folder?.id ?? null, timestamp, timestamp).run();
+    const stored = await fileRow(env.DB, result.meta.last_row_id);
+    const historyPromise = addHistory(env.DB, stored, user, 'upload', null, null, 'Файл загружен', request);
+    if (context?.waitUntil) context.waitUntil(historyPromise.catch((error) => console.error('Upload history error', error)));
+    else await historyPromise;
+    return json({ message: 'File uploaded successfully', file: serializeFile(stored) }, 201);
+  } catch (error) {
+    if (storedObject) await env.FILES.delete(key);
+    throw error;
+  }
+}
+
+async function upload(request, env, context) {
+  const user = await requireUser(request, env);
+  if (user instanceof Response) return user;
+  const requestType = request.headers.get('content-type') || 'application/octet-stream';
+  if (requestType.toLowerCase().startsWith('multipart/form-data')) {
+    const form = await request.formData();
+    const file = form.get('file');
+    if (!(file instanceof File)) return json({ error: 'File not provided' }, 400);
+    return persistUpload({ request, env, context, user, name: file.name, size: file.size, contentType: file.type || 'application/octet-stream', folderId: form.get('folder_id'), body: file.stream() });
+  }
+
+  const name = decodedHeader(request.headers.get('x-ep-file-name'));
+  const size = Number(request.headers.get('x-ep-file-size') ?? request.headers.get('content-length'));
+  const folderId = request.headers.get('x-ep-folder-id');
+  return persistUpload({ request, env, context, user, name, size, contentType: requestType, folderId, body: request.body || new Uint8Array(0) });
 }
 
 async function listFiles(request, env) {
   const user = await requireUser(request, env);
   if (user instanceof Response) return user;
-  const { results = [] } = await env.DB.prepare(`
-    SELECT f.*, u.email AS owner_email FROM files f JOIN users u ON u.id = f.owner_id
-    WHERE f.is_deleted = 0 ORDER BY f.created_at DESC
-  `).all();
-  const output = [];
-  for (const file of results) {
-    const permission = await resourcePermission(env.DB, user, 'files', file);
-    if (!permission) continue;
-    const favorite = await env.DB.prepare("SELECT id FROM favorites WHERE user_id = ? AND item_type = 'file' AND item_id = ?")
-      .bind(user.id, file.id).first();
-    output.push({ ...serializeFile(file), is_favorite: Boolean(favorite), can_write: canWrite(permission) });
-  }
+  const [fileResult, permissionResult, folderResult] = await env.DB.batch([
+    env.DB.prepare(`
+      SELECT f.*, u.email AS owner_email, CASE WHEN fav.id IS NULL THEN 0 ELSE 1 END AS is_favorite
+      FROM files f JOIN users u ON u.id = f.owner_id
+      LEFT JOIN favorites fav ON fav.user_id = ? AND fav.item_type = 'file' AND fav.item_id = f.id
+      WHERE f.is_deleted = 0 ORDER BY f.created_at DESC
+    `).bind(user.id),
+    env.DB.prepare('SELECT file_id, folder_id, permission_type, inherit FROM permissions WHERE user_id = ?').bind(user.id),
+    env.DB.prepare('SELECT id, parent_id FROM folders WHERE is_deleted = 0'),
+  ]);
+  const snapshot = buildAccessSnapshot(permissionResult.results || [], folderResult.results || []);
+  const output = (fileResult.results || []).flatMap((file) => {
+    const permission = snapshotPermission(user, 'files', file, snapshot);
+    return permission ? [{ ...serializeFile(file), is_favorite: Boolean(file.is_favorite), can_write: canWrite(permission) }] : [];
+  });
   return json(output);
 }
 
@@ -557,20 +677,25 @@ async function accessibleFiles(request, env) {
 async function listFolders(request, env) {
   const user = await requireUser(request, env);
   if (user instanceof Response) return user;
-  const { results = [] } = await env.DB.prepare('SELECT * FROM folders WHERE is_deleted = 0 ORDER BY name').all();
-  const output = [];
-  for (const folder of results) {
-    const permission = await resourcePermission(env.DB, user, 'folders', folder);
-    if (!permission) continue;
-    output.push({
+  const [folderResult, permissionResult, directSizeResult] = await env.DB.batch([
+    env.DB.prepare('SELECT f.*, u.email AS owner_email FROM folders f JOIN users u ON u.id = f.owner_id WHERE f.is_deleted = 0 ORDER BY f.name'),
+    env.DB.prepare('SELECT file_id, folder_id, permission_type, inherit FROM permissions WHERE user_id = ?').bind(user.id),
+    env.DB.prepare('SELECT folder_id, COALESCE(SUM(size), 0) AS total FROM files WHERE is_deleted = 0 AND folder_id IS NOT NULL GROUP BY folder_id'),
+  ]);
+  const folders = folderResult.results || [];
+  const snapshot = buildAccessSnapshot(permissionResult.results || [], folders);
+  const resolveSize = folderSizeResolver(folders, directSizeResult.results || []);
+  const output = folders.flatMap((folder) => {
+    const permission = snapshotPermission(user, 'folders', folder, snapshot);
+    if (!permission) return [];
+    return [{
       id: Number(folder.id), name: folder.name, parent_id: folder.parent_id == null ? null : Number(folder.parent_id),
-      path: await folderPath(env.DB, folder.id), size: await folderSize(env.DB, folder.id),
-      owner_email: (await env.DB.prepare('SELECT email FROM users WHERE id = ?').bind(folder.owner_id).first())?.email,
+      path: folderPathFromSnapshot(folder.id, snapshot.folderById), size: resolveSize(folder.id), owner_email: folder.owner_email,
       is_public: Boolean(folder.is_public), public_token: folder.public_token || null,
       public_expires_at: folder.public_expires_at || null, created_at: folder.created_at,
       updated_at: folder.updated_at, can_write: canWrite(permission),
-    });
-  }
+    }];
+  });
   return json({ folders: output });
 }
 
@@ -624,28 +749,48 @@ async function createFolder(request, env) {
   return json({ id: Number(result.meta.last_row_id), name, parent_id: parent?.id ?? null, path: `${parent ? await folderPath(env.DB, parent.id) : ''}/${name}` }, 201);
 }
 
-async function downloadFile(request, env, fileId, inline = false) {
+async function downloadFile(request, env, fileId, inline = false, context) {
   const user = await requireUser(request, env);
   if (user instanceof Response) return user;
   const file = await fileRow(env.DB, fileId);
   if (!file) return json({ error: 'File not found' }, 404);
   const permission = await resourcePermission(env.DB, user, 'files', file);
   if (!permission) return json({ error: 'Access denied' }, 403);
-  await addHistory(env.DB, file, user, 'download', null, null, 'Файл скачан', request);
-  return storedFileResponse(env, file, inline);
+  const historyPromise = addHistory(env.DB, file, user, 'download', null, null, 'Файл скачан', request);
+  if (context?.waitUntil) context.waitUntil(historyPromise.catch((error) => console.error('Download history error', error)));
+  else await historyPromise;
+  return storedFileResponse(request, env, file, inline);
 }
 
-async function storedFileResponse(env, file, inline = false) {
-  const object = await env.FILES.get(file.storage_key);
+async function storedFileResponse(request, env, file, inline = false) {
+  const object = await env.FILES.get(file.storage_key, { onlyIf: request.headers, range: request.headers });
   if (!object) return json({ error: 'File not found on server' }, 404);
+  const totalSize = Number(file.size || object.size || 0);
   const disposition = inline ? 'inline' : 'attachment';
-  const headers = new Headers({
-    'content-type': file.content_type || 'application/octet-stream',
-    'content-length': String(file.size || object.size),
-    'content-disposition': `${disposition}; filename*=UTF-8''${encodeURIComponent(file.name)}`,
-    'etag': object.httpEtag,
-  });
-  return new Response(object.body, { headers });
+  const headers = new Headers();
+  object.writeHttpMetadata(headers);
+  headers.set('content-type', file.content_type || 'application/octet-stream');
+  headers.set('content-disposition', `${disposition}; filename*=UTF-8''${encodeURIComponent(file.name)}`);
+  headers.set('etag', object.httpEtag);
+  headers.set('accept-ranges', 'bytes');
+  headers.set('cache-control', 'private, no-cache');
+
+  if (!('body' in object)) {
+    const notModified = request.headers.has('if-none-match') || request.headers.has('if-modified-since');
+    return new Response(null, { status: notModified ? 304 : 412, headers });
+  }
+
+  const requestedRange = request.headers.has('range') && object.range;
+  if (requestedRange) {
+    const length = Number(object.range.length || 0);
+    const offset = Number(object.range.offset ?? Math.max(0, totalSize - length));
+    headers.set('content-range', `bytes ${offset}-${offset + Math.max(0, length - 1)}/${totalSize}`);
+    headers.set('content-length', String(length));
+    return new Response(object.body, { status: 206, headers });
+  }
+
+  headers.set('content-length', String(totalSize));
+  return new Response(object.body, { status: 200, headers });
 }
 
 async function mutateFile(request, env, fileId) {
@@ -817,6 +962,20 @@ async function deleteFolder(request, env, folderId) {
   return json({ status: 'moved_to_trash', id: folderId });
 }
 
+async function mapConcurrent(items, limit, mapper) {
+  const results = new Array(items.length);
+  let nextIndex = 0;
+  const workers = Array.from({ length: Math.min(limit, items.length) }, async () => {
+    while (nextIndex < items.length) {
+      const index = nextIndex;
+      nextIndex += 1;
+      results[index] = await mapper(items[index], index);
+    }
+  });
+  await Promise.all(workers);
+  return results;
+}
+
 async function downloadFolder(request, env, folderId) {
   const user = await requireUser(request, env);
   if (user instanceof Response) return user;
@@ -831,27 +990,32 @@ async function downloadFolder(request, env, folderId) {
     SELECT fi.*, d.path FROM files fi JOIN descendants d ON fi.folder_id = d.id WHERE fi.is_deleted = 0
   `).bind(folderId).all();
   const entries = {};
-  for (const file of results) {
+  const archivedFiles = await mapConcurrent(results, 6, async (file) => {
     const object = await env.FILES.get(file.storage_key);
-    if (object) entries[`${file.path}/${file.name}`] = new Uint8Array(await object.arrayBuffer());
-  }
-  const archive = zipSync(entries, { level: 6 });
-  return new Response(archive, { headers: { 'content-type': 'application/zip', 'content-disposition': `attachment; filename*=UTF-8''${encodeURIComponent(`${folder.name}.zip`)}` } });
+    return object ? [`${file.path}/${file.name}`, new Uint8Array(await object.arrayBuffer())] : null;
+  });
+  for (const archivedFile of archivedFiles) if (archivedFile) entries[archivedFile[0]] = archivedFile[1];
+  const archive = zipSync(entries, { level: 1 });
+  return new Response(archive, { headers: { 'content-type': 'application/zip', 'content-length': String(archive.byteLength), 'content-disposition': `attachment; filename*=UTF-8''${encodeURIComponent(`${folder.name}.zip`)}` } });
 }
 
 async function favorites(request, env) {
   const user = await requireUser(request, env);
   if (user instanceof Response) return user;
-  const { results = [] } = await env.DB.prepare('SELECT item_type, item_id FROM favorites WHERE user_id = ? ORDER BY created_at DESC').bind(user.id).all();
-  const items = [];
-  for (const favorite of results) {
-    const table = favorite.item_type === 'folder' ? 'folders' : 'files';
-    const item = await env.DB.prepare(`SELECT id, name${table === 'files' ? ', size' : ''} FROM ${table} WHERE id = ?`).bind(favorite.item_id).first();
-    if (item) items.push({ id: Number(item.id), name: item.name, type: favorite.item_type, size: Number(item.size || 0) });
-  }
+  const { results = [] } = await env.DB.prepare(`
+    SELECT fav.item_type, fav.item_id,
+      CASE WHEN fav.item_type = 'file' THEN fi.name ELSE fo.name END AS name,
+      CASE WHEN fav.item_type = 'file' THEN fi.size ELSE 0 END AS size
+    FROM favorites fav
+    LEFT JOIN files fi ON fav.item_type = 'file' AND fi.id = fav.item_id AND fi.is_deleted = 0
+    LEFT JOIN folders fo ON fav.item_type = 'folder' AND fo.id = fav.item_id AND fo.is_deleted = 0
+    WHERE fav.user_id = ? ORDER BY fav.created_at DESC
+  `).bind(user.id).all();
+  const validResults = results.filter((item) => item.name != null);
+  const items = validResults.map((item) => ({ id: Number(item.item_id), name: item.name, type: item.item_type, size: Number(item.size || 0) }));
   return json({
-    file_ids: results.filter((item) => item.item_type === 'file').map((item) => Number(item.item_id)),
-    folder_ids: results.filter((item) => item.item_type === 'folder').map((item) => Number(item.item_id)), items,
+    file_ids: validResults.filter((item) => item.item_type === 'file').map((item) => Number(item.item_id)),
+    folder_ids: validResults.filter((item) => item.item_type === 'folder').map((item) => Number(item.item_id)), items,
   });
 }
 
@@ -1021,7 +1185,7 @@ async function publicFile(request, env, token, url) {
   if (!file) return json({ error: 'Public link expired' }, 404);
   const owner = await env.DB.prepare('SELECT email FROM users WHERE id = ?').bind(file.owner_id).first();
   if (url.searchParams.get('meta') === '1') return json({ id: Number(file.id), name: file.name, size: Number(file.size), owner_email: owner?.email, public_token: token, public_expires_at: file.public_expires_at || null, download_url: request.url.split('?')[0] });
-  return storedFileResponse(env, file);
+  return storedFileResponse(request, env, file, url.searchParams.get('inline') === '1');
 }
 
 async function publicFolder(request, env, token) {
@@ -1043,7 +1207,7 @@ async function publicFolderFile(request, env, token, fileId) {
   if (!folder) return json({ error: 'Public link expired' }, 404);
   const file = await fileRow(env.DB, fileId);
   if (!file || Number(file.folder_id) !== Number(folder.id)) return json({ error: 'File not found' }, 404);
-  return storedFileResponse(env, file);
+  return storedFileResponse(request, env, file);
 }
 
 async function createReport(env, file, data, reporterEmail = '') {
@@ -1317,5 +1481,5 @@ async function adminDownloadReport(request, env, reportId) {
   if (!report) return json({ error: 'Report not found' }, 404);
   if (!report.file_id) return json({ error: 'File already deleted' }, 404);
   const file = await fileRow(env.DB, report.file_id, true);
-  return file ? storedFileResponse(env, file) : json({ error: 'File already deleted' }, 404);
+  return file ? storedFileResponse(request, env, file) : json({ error: 'File already deleted' }, 404);
 }

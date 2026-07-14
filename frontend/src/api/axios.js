@@ -67,35 +67,40 @@ api.interceptors.response.use(
   }
 );
 
-export const uploadFileApi = (file, onProgress) => {
-  const formData = new FormData();
-  formData.append('file', file);
+export const uploadFileApi = (file, { folderId = null, onProgress, signal } = {}) => api.post('/upload/', file, {
+  timeout: 0,
+  signal,
+  headers: {
+    'Content-Type': file.type || 'application/octet-stream',
+    'X-EP-File-Name': encodeURIComponent(file.name),
+    'X-EP-File-Size': String(file.size),
+    ...(folderId ? { 'X-EP-Folder-Id': String(folderId) } : {}),
+  },
+  onUploadProgress: (event) => {
+    const total = Number(event.total) || file.size;
+    const loaded = Math.min(Number(event.loaded) || 0, total || file.size);
+    const percent = total > 0 ? Math.min(99, Math.floor((loaded * 100) / total)) : 0;
+    onProgress?.({ loaded, total, percent });
+  },
+});
 
-  return api.post('/upload/', formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-    onUploadProgress: (progressEvent) => {
-      const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-      onProgress(percentCompleted);
-    },
-  });
-};
+export function apiUrl(path) {
+  const base = API_URL.replace(/\/$/, '');
+  const suffix = path.startsWith('/') ? path : `/${path}`;
+  return `${base}${suffix}`;
+}
 
-export const downloadFileApi = async (fileId, fileName) => {
-  const response = await api.get(`/files/${fileId}/download/`, {
-    responseType: 'blob',
-  });
-
-  const url = window.URL.createObjectURL(new Blob([response.data]));
+export function startBrowserDownload(path, fileName) {
   const link = document.createElement('a');
-  link.href = url;
+  link.href = /^https?:\/\//i.test(path) ? path : apiUrl(path);
   link.setAttribute('download', fileName);
+  link.style.display = 'none';
   document.body.appendChild(link);
   link.click();
   link.remove();
-  window.URL.revokeObjectURL(url);
-};
+}
+
+export const downloadFileApi = (fileId, fileName) => startBrowserDownload(`/download/${fileId}/`, fileName);
 
 export const readTextFileApi = (fileId) => api.get(`/files/${fileId}/content/`);
 export const saveTextFileApi = (fileId, content) => api.post(`/files/${fileId}/save/`, { content });

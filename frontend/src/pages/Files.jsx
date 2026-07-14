@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Alert, Avatar, Box, Button, CircularProgress, Collapse, Container, IconButton, Paper, TextField, Tooltip, Typography } from '@mui/material';
 import { Close, DarkMode, DeleteOutline, Download as DownloadIcon, ExpandMore, Folder, LightMode, LockReset, Logout, PhotoCamera, RestoreFromTrash, Shield, Star, Storage, Visibility } from '@mui/icons-material';
-import api from '../api/axios';
+import api, { startBrowserDownload } from '../api/axios';
 import { useAuth } from '../context/authContextValue';
 import { useThemeMode } from '../themeMode';
 import { getApiErrorMessage } from './file-manager/fileManagerHelpers';
@@ -242,16 +242,13 @@ export default function Files({ onPreviewFile }) {
     }).catch((err) => setError(getApiErrorMessage(err, 'Не удалось загрузить данные личного кабинета')));
   }, []);
 
-  const handleDownloadFav = async (id, name, type) => {
+  const handleDownloadFav = (id, name, type) => {
     const taskId = `download-fav-${Date.now()}`;
     const isFolder = type === 'folder';
     setTasks((prev) => [...prev, { id: taskId, name: name + (isFolder ? '.zip' : ''), subText: 'Подготовка потока данных', status: 'downloading' }]);
     try {
-      const response = await api.get(isFolder ? `folders/${id}/download/` : `download/${id}/`, { responseType: 'blob' });
-      const blobUrl = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = blobUrl; link.setAttribute('download', isFolder ? `${name}.zip` : name); link.click(); window.URL.revokeObjectURL(blobUrl);
-      setTasks((prev) => prev.map((task) => (task.id === taskId ? { ...task, subText: 'Сохранено на устройство', status: 'success' } : task)));
+      startBrowserDownload(isFolder ? `/folders/${id}/download/` : `/download/${id}/`, isFolder ? `${name}.zip` : name);
+      setTasks((prev) => prev.map((task) => (task.id === taskId ? { ...task, subText: 'Передача выполняется браузером', status: 'success' } : task)));
     } catch {
       setTasks((prev) => prev.map((task) => (task.id === taskId ? { ...task, subText: 'Нет прав доступа', status: 'error' } : task)));
     }

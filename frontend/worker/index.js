@@ -5,7 +5,7 @@ export default {
   async fetch(request, env, context) {
     if (new URL(request.url).pathname.startsWith('/api/')) {
       try {
-        return await handleApiRequest(request, env);
+        return await handleApiRequest(request, env, context);
       } catch (error) {
         console.error('Unhandled EP Files API error', error);
         return Response.json({ error: 'Internal server error' }, { status: 500 });

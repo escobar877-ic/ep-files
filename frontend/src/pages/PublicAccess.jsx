@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Alert, Box, Button, CircularProgress, Container, Dialog, DialogActions, DialogContent, DialogTitle, List, ListItem, ListItemText, Paper, TextField, Typography } from '@mui/material';
 import { AccountCircle, Download, Folder, ReportProblem } from '@mui/icons-material';
-import api from '../api/axios';
+import api, { apiUrl, startBrowserDownload } from '../api/axios';
 import BrandWordmark from '../components/BrandWordmark';
 import FileTypeIcon from '../components/FileTypeIcon';
 
@@ -24,17 +24,6 @@ function formatFileSize(bytes) {
   const units = ['Б', 'КБ', 'МБ', 'ГБ'];
   const index = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
   return `${parseFloat((bytes / (1024 ** index)).toFixed(1))} ${units[index]}`;
-}
-
-function triggerDownload(blobData, filename) {
-  const blobUrl = window.URL.createObjectURL(new Blob([blobData]));
-  const link = document.createElement('a');
-  link.href = blobUrl;
-  link.setAttribute('download', filename);
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  window.URL.revokeObjectURL(blobUrl);
 }
 
 function PublicPreview({ file, preview }) {
@@ -68,7 +57,6 @@ function PublicFilePage({ token }) {
   const [reportStatus, setReportStatus] = useState('');
 
   useEffect(() => {
-    let objectUrl = '';
     let cancelled = false;
 
     async function loadFile() {
@@ -85,12 +73,11 @@ function PublicFilePage({ token }) {
           return;
         }
 
-        const response = await api.get(`/public/files/${token}/`, { responseType: type === 'text' ? 'text' : 'blob' });
-        if (cancelled) return;
-        if (type === 'text') setPreview({ loading: false, error: '', url: '', content: response.data });
-        else {
-          objectUrl = window.URL.createObjectURL(response.data);
-          setPreview({ loading: false, error: '', url: objectUrl, content: '' });
+        if (type === 'text') {
+          const response = await api.get(`/public/files/${token}/?inline=1`, { responseType: 'text', timeout: 0 });
+          if (!cancelled) setPreview({ loading: false, error: '', url: '', content: response.data });
+        } else {
+          setPreview({ loading: false, error: '', url: apiUrl(`/public/files/${token}/?inline=1`), content: '' });
         }
       } catch {
         if (!cancelled) {
@@ -103,14 +90,10 @@ function PublicFilePage({ token }) {
     loadFile();
     return () => {
       cancelled = true;
-      if (objectUrl) window.URL.revokeObjectURL(objectUrl);
     };
   }, [token]);
 
-  const download = async () => {
-    const response = await api.get(`/public/files/${token}/`, { responseType: 'blob' });
-    triggerDownload(response.data, file?.name || 'file');
-  };
+  const download = () => startBrowserDownload(`/public/files/${token}/`, file?.name || 'file');
 
   const submitReport = async () => {
     try {

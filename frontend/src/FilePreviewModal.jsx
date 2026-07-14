@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { alpha, useTheme } from '@mui/material/styles';
-import api from './api/axios';
+import api, { apiUrl, startBrowserDownload } from './api/axios';
 
 const previewGroups = {
   image: ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp', 'svg'],
@@ -24,13 +24,8 @@ function getDownloadPath(file) {
   return file.download_url ? file.download_url.replace(/^\/api/, '') : `/files/${file.id}/download/`;
 }
 
-function getPreviewMime(previewType, fileName, responseType = '') {
-  if (responseType && !responseType.includes('octet-stream')) return responseType;
-  if (previewType === 'pdf') return 'application/pdf';
-  if (previewType === 'image') return `image/${getExtension(fileName) === 'jpg' ? 'jpeg' : getExtension(fileName)}`;
-  if (previewType === 'video') return `video/${getExtension(fileName)}`;
-  if (previewType === 'audio') return `audio/${getExtension(fileName)}`;
-  return 'application/octet-stream';
+function getPreviewPath(file) {
+  return `/preview/${file.id}/`;
 }
 
 function decodeText(bytes) {
@@ -847,30 +842,28 @@ function usePreview(file) {
   const [state, setState] = useState({ content: '', previewUrl: null, office: null, loading: true, error: null });
   useEffect(() => {
     let cancelled = false;
-    let objectUrl = null;
     const loadPreview = async () => {
       const previewType = getPreviewType(file.name);
       setState({ content: '', previewUrl: null, office: null, loading: true, error: null });
       if (previewType === 'unsupported') return setState({ content: '', previewUrl: null, office: null, loading: false, error: `Предпросмотр недоступен для файла ${file.name}` });
+      if (['image', 'video', 'audio', 'pdf'].includes(previewType)) {
+        setState({ content: '', previewUrl: apiUrl(getPreviewPath(file)), office: null, loading: false, error: null });
+        return;
+      }
       try {
-        const response = await api.get(getDownloadPath(file), { responseType: previewType === 'text' ? 'text' : 'arraybuffer' });
+        const response = await api.get(getPreviewPath(file), { responseType: previewType === 'text' ? 'text' : 'arraybuffer', timeout: 0 });
         if (cancelled) return;
         if (previewType === 'text') setState({ content: response.data, previewUrl: null, office: null, loading: false, error: null });
         else if (previewType === 'office') {
           const office = await parseOfficePreview(file.name, response.data);
           if (!cancelled) setState({ content: '', previewUrl: null, office, loading: false, error: null });
-        } else {
-          const contentType = response.headers?.['content-type'] || '';
-          const blob = new Blob([response.data], { type: getPreviewMime(previewType, file.name, contentType) });
-          objectUrl = URL.createObjectURL(blob);
-          setState({ content: '', previewUrl: objectUrl, office: null, loading: false, error: null });
         }
       } catch (err) {
         if (!cancelled) setState({ content: '', previewUrl: null, office: null, loading: false, error: err.response?.data?.detail || err.message || 'Не удалось загрузить файл для предпросмотра' });
       }
     };
     loadPreview();
-    return () => { cancelled = true; if (objectUrl) URL.revokeObjectURL(objectUrl); };
+    return () => { cancelled = true; };
   }, [file]);
   return state;
 }
@@ -1155,15 +1148,12 @@ const closeButtonStyle = {
   boxShadow: '0 6px 16px rgba(138, 47, 47, 0.12)',
 };
 
-async function downloadFile(file, setError, setDownloading) {
+function downloadFile(file, setError, setDownloading) {
   setDownloading(true);
   try {
-    const response = await api.get(getDownloadPath(file), { responseType: 'blob' });
-    const blobUrl = URL.createObjectURL(response.data);
-    const link = document.createElement('a');
-    link.href = blobUrl; link.setAttribute('download', file.name); link.click(); URL.revokeObjectURL(blobUrl);
+    startBrowserDownload(getDownloadPath(file), file.name);
   } catch (err) {
-    setError(err.response?.data?.detail || err.message || 'Не удалось скачать файл');
+    setError(err.message || 'Не удалось скачать файл');
   } finally {
     setDownloading(false);
   }

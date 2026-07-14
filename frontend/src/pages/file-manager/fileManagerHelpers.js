@@ -76,14 +76,3 @@ export function currentLocationName(currentFolderId, breadcrumbs) {
   if (!currentFolderId) return 'Главная';
   return breadcrumbs.find((folder) => folder.id === currentFolderId)?.name || 'Папка';
 }
-
-export function triggerBrowserDownload(blobData, filename) {
-  const blobUrl = window.URL.createObjectURL(new Blob([blobData]));
-  const link = document.createElement('a');
-  link.href = blobUrl;
-  link.setAttribute('download', filename);
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  window.URL.revokeObjectURL(blobUrl);
-}

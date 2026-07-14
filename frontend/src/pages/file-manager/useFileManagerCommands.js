@@ -1,23 +1,16 @@
 import { useState } from 'react';
-import api from '../../api/axios';
-import { extractIncomingFiles, getApiErrorMessage, triggerBrowserDownload } from './fileManagerHelpers';
+import api, { startBrowserDownload, uploadFileApi } from '../../api/axios';
+import { extractIncomingFiles, getApiErrorMessage } from './fileManagerHelpers';
 
 function makeTaskId(prefix) {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
 }
 
-async function animateUploadProgress(taskId, updateTask) {
-  await new Promise((resolve) => {
-    let currentProgress = 0;
-    const interval = setInterval(() => {
-      currentProgress = Math.min(100, currentProgress + Math.floor(Math.random() * 8) + 4);
-      updateTask(taskId, { progress: currentProgress });
-      if (currentProgress >= 100) {
-        clearInterval(interval);
-        resolve();
-      }
-    }, 100);
-  });
+function formatTransferSize(bytes) {
+  const value = Number(bytes) || 0;
+  if (value < 1024) return `${value} Б`;
+  if (value < 1024 ** 2) return `${(value / 1024).toFixed(1)} КБ`;
+  return `${(value / 1024 ** 2).toFixed(1)} МБ`;
 }
 
 export function useUploadCommand({ currentFolderId, loadData, taskQueue }) {
@@ -25,39 +18,41 @@ export function useUploadCommand({ currentFolderId, loadData, taskQueue }) {
     const cleanFiles = extractIncomingFiles(incomingData);
     if (cleanFiles.length === 0) return;
 
+    let uploadedAny = false;
     for (const cleanFile of cleanFiles) {
-      const formData = new FormData();
-      formData.append('file', cleanFile);
-      if (targetFolderId) formData.append('folder_id', targetFolderId);
-
       const taskId = makeTaskId('upload');
       taskQueue.setIsWidgetMinimized(false);
       taskQueue.addTask(taskId, cleanFile.name, 'Загрузка файла...', 'Отправка в облако', 'uploading', 0);
       try {
-        await api.post('/upload/', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
-        await animateUploadProgress(taskId, taskQueue.updateTask);
+        await uploadFileApi(cleanFile, {
+          folderId: targetFolderId,
+          onProgress: ({ loaded, total, percent }) => taskQueue.updateTask(taskId, {
+            progress: percent,
+            subText: `${formatTransferSize(loaded)} из ${formatTransferSize(total)}`,
+          }),
+        });
+        uploadedAny = true;
         taskQueue.updateTask(taskId, { title: 'Загрузка завершена', subText: 'Файл успешно сохранен', status: 'success', progress: 100 });
-        setTimeout(() => loadData(), 100);
       } catch (err) {
         console.error(`Критическая ошибка при отправке файла ${cleanFile.name}:`, err);
         taskQueue.updateTask(taskId, { title: 'Ошибка загрузки', subText: getApiErrorMessage(err, 'Не удалось загрузить файл'), status: 'error' });
       }
       taskQueue.removeTaskWithTimer(taskId);
     }
+    if (uploadedAny) await loadData({ silent: true });
   };
   return processUpload;
 }
 
 export function useDownloadCommand(taskQueue) {
-  return async (id, name, type) => {
+  return (id, name, type) => {
     const taskId = makeTaskId('download');
     const isFolder = type === 'folder';
     taskQueue.setIsWidgetMinimized(false);
     taskQueue.addTask(taskId, name + (isFolder ? '.zip' : ''), isFolder ? 'Архивация и скачивание папки...' : 'Скачивание файла...', 'Подготовка потока данных', 'downloading');
     try {
-      const response = await api.get(isFolder ? `folders/${id}/download/` : `download/${id}/`, { responseType: 'blob' });
-      triggerBrowserDownload(response.data, isFolder ? `${name}.zip` : name);
-      taskQueue.updateTask(taskId, { title: isFolder ? 'Архив успешно скачан' : 'Скачивание завершено', subText: 'Сохранено на устройство', status: 'success' });
+      startBrowserDownload(isFolder ? `/folders/${id}/download/` : `/download/${id}/`, isFolder ? `${name}.zip` : name);
+      taskQueue.updateTask(taskId, { title: 'Скачивание начато', subText: 'Передача выполняется браузером', status: 'success' });
     } catch (err) {
       console.error('Ошибка при скачивании:', err);
       taskQueue.updateTask(taskId, { title: 'Ошибка скачивания', subText: getApiErrorMessage(err, err.response?.status === 404 ? 'Объект не найден' : 'Не удалось скачать объект'), status: 'error' });

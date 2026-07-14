@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Alert, Box, Button, Chip, CircularProgress, Container, Grid, InputAdornment, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Tooltip, Typography } from '@mui/material';
 import { ArrowBack, Block, CheckCircleOutline, DeleteOutline, Download, LinkOff, Refresh, Save, Verified } from '@mui/icons-material';
-import api from '../api/axios';
+import api, { startBrowserDownload } from '../api/axios';
 import AppHeaderGrid from '../components/AppHeaderGrid';
 import BrandWordmark from '../components/BrandWordmark';
 import { useAuth } from '../context/authContextValue';
@@ -81,17 +81,6 @@ function UsersTable({ users, currentUser, actionLoading, limitInputs, maxStorage
       </Table>
     </TableContainer>
   );
-}
-
-function triggerBrowserDownload(blobData, filename) {
-  const blobUrl = window.URL.createObjectURL(new Blob([blobData]));
-  const link = document.createElement('a');
-  link.href = blobUrl;
-  link.setAttribute('download', filename);
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  window.URL.revokeObjectURL(blobUrl);
 }
 
 function ReportsTable({ reports, actionLoading, onResolveReport, onDownloadReportFile }) {
@@ -232,11 +221,10 @@ export default function Admin() {
     }
   };
 
-  const handleDownloadReportFile = async (report) => {
+  const handleDownloadReportFile = (report) => {
     try {
       setActionLoading(`download-report-${report.id}`); setError('');
-      const response = await api.get(`/admin/reports/${report.id}/download/`, { responseType: 'blob' });
-      triggerBrowserDownload(response.data, report.file_name || 'reported-file');
+      startBrowserDownload(`/admin/reports/${report.id}/download/`, report.file_name || 'reported-file');
     } catch (err) {
       setError(err.response?.data?.error || 'Не удалось скачать файл из жалобы');
     } finally {
