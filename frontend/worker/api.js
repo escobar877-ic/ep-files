@@ -317,6 +317,7 @@ async function requireAdmin(request, env) {
 }
 
 function serializeUser(user) {
+  const avatarVersion = user.avatar_key ? String(user.avatar_key).split('/').pop() : '';
   return {
     id: Number(user.id),
     name: user.name || '',
@@ -326,7 +327,7 @@ function serializeUser(user) {
     is_active: Boolean(user.is_active),
     storage_limit: Number(user.storage_limit),
     date_joined: user.date_joined,
-    avatar_url: user.avatar_key ? `/api/auth/avatar/${user.id}/` : null,
+    avatar_url: user.avatar_key ? `/api/auth/avatar/${user.id}/?v=${encodeURIComponent(avatarVersion)}` : null,
   };
 }
 
