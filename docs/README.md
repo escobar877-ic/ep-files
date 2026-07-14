@@ -1,89 +1,43 @@
-# EP-Files Documentation
+# EP Files Documentation
 
-Документация генерируется из docstrings через [Sphinx](https://www.sphinx-doc.org/) с расширениями `autodoc` и `napoleon`.
+This directory documents the current EP Files application deployed from `frontend/`.
 
----
+## Guides
 
-## Покрытые модули
+| Document | Contents |
+| --- | --- |
+| [Project README](../README.md) | Features, quick start, commands, limits, and repository map |
+| [Architecture](./ARCHITECTURE.md) | Runtime, persistence, authentication, permissions, uploads, and caching |
+| [API Reference](./API.md) | HTTP endpoints, request formats, authentication, and errors |
+| [Deployment](./DEPLOYMENT.md) | Build, hosting bindings, release checks, and rollback guidance |
+| [Frontend Guide](../frontend/README.md) | UI structure, scripts, routes, and development workflow |
 
-| Модуль | Путь |
-|---|---|
-| File services (Strategy / Observer / Facade) | `ep_files_app/services/file_service.py` |
-| API serializers | `ep_files_app/api/serializers.py` |
-| Permissions | `ep_files_app/permissions.py` |
+## Implementation Source of Truth
 
----
+The current production implementation is:
 
-## Локальная сборка
+- `frontend/src/` for the React application
+- `frontend/app/` for the vinext application shell
+- `frontend/worker/` for the Worker API
+- `frontend/drizzle/` for the D1 schema
+- `frontend/.openai/hosting.json` for logical Sites bindings
 
-### Требования
+The Sphinx configuration and Django modules retained elsewhere in the repository describe the legacy university implementation. They are not used by the live Cloudflare deployment.
 
-```bash
-pip install sphinx sphinx-rtd-theme
-```
+## Updating Documentation
 
-### Сборка HTML
+Update the relevant Markdown guide whenever a change affects:
 
-```bash
-cd docs
-make html
-```
+- a public or authenticated API contract;
+- a file-size, storage, session, or permission limit;
+- a local development or build command;
+- a D1 table, R2 object lifecycle, or hosting binding;
+- a user-facing route or major workflow.
 
-Результат: `docs/build/html/index.html`
-
-### Открыть в браузере
-
-```bash
-# Linux / macOS
-open docs/build/html/index.html
-
-# Windows
-start docs\build\html\index.html
-```
-
-### Очистка
+Use relative links, executable command examples, and names that match the current source code. Run the normal application checks after documentation changes to catch accidental source edits:
 
 ```bash
-make clean
+cd frontend
+npm run lint
+npm run sites:build
 ```
-
----
-
-## CI / GitLab Pages
-
-| Ветка | Поведение |
-|---|---|
-| `feature/ci-cd-docs`, `dev` | Сборка + артефакт (скачать из pipeline → `docs/build/html/`) |
-| `main` | Сборка + деплой на **GitLab Pages** |
-
-GitLab Pages URL после мержа в `main`:
-
-```
-https://<namespace>.gitlab.io/<project-name>/
-```
-
-Артефакты хранятся **30 дней**. Скачать: GitLab → Pipeline → Job `build-docs` → Download artifacts.
-
----
-
-## Добавление docstrings
-
-Используй Google-style формат (поддерживается `napoleon`):
-
-```python
-def handle_upload(self, uploaded_file, user):
-    """Краткое описание.
-
-    Args:
-        uploaded_file: Загружаемый файл.
-        user: Владелец файла.
-
-    Returns:
-        tuple[File | None, str]: Объект файла и статус обработки.
-
-    Raises:
-        ValueError: Если файл повреждён.
-    """
-```
-
-После добавления docstring пересобери: `make html`.

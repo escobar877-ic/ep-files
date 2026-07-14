@@ -1,101 +1,122 @@
-# Как контрибьютить в EP Files
+# Contributing to EP Files
 
-## Ветковая стратегия
+Thank you for improving EP Files. This guide applies to the current application under `frontend/`.
 
-```
-master        — только релизы, прямые коммиты запрещены
-└── dev       — основная разработка, сюда идут все MR
-    └── feature/название   — новая фича
-    └── fix/название       — исправление бага
-```
+## Development Setup
 
-**Правило:** любая работа ведётся в отдельной ветке от `dev`, затем через Merge Request обратно в `dev`.
+Requirements:
 
-## Рабочий процесс
+- Node.js 20 or newer
+- npm 10 or newer
+- Git
 
 ```bash
-# 1. Убедись что dev актуален
-git checkout dev
-git pull origin dev
-
-# 2. Создай ветку
-git checkout -b feature/название-фичи
-
-# 3. Работай, коммить
-git add .
-git commit -m "feat: описание изменения"
-
-# 4. Запушь
-git push origin feature/название-фичи
-
-# 5. Открой Merge Request в dev через GitLab
+git clone https://github.com/escobar877-ic/ep-files.git
+cd ep-files/frontend
+npm ci
+npm run sites:dev -- --port 5173
 ```
 
-## Формат коммитов
+Open [http://localhost:5173](http://localhost:5173). The complete UI, Worker API, local D1 database, and local R2 storage run together.
 
-Используем [Conventional Commits](https://www.conventionalcommits.org/):
+## Branches
 
-| Префикс | Когда использовать |
-|---|---|
-| `feat:` | новая функциональность |
-| `fix:` | исправление бага |
-| `docs:` | изменения в документации |
-| `refactor:` | рефакторинг без изменения поведения |
-| `test:` | добавление или правка тестов |
-| `chore:` | обновление зависимостей, конфигов |
-
-Примеры:
-```
-feat: добавить превью для PDF-файлов
-fix: исправить ошибку при загрузке файлов > 100MB
-docs: обновить раздел быстрого старта в README
-```
-
-## CI/CD — что проверяется автоматически
-
-При открытии Merge Request и на ветке `dev` запускается пайплайн:
-
-**Lint** — pylint с порогом 8.0. Если упадёт — MR не принимается.
-
-Запусти локально перед пушем:
-```bash
-pylint ep_files_app/ main/ --load-plugins=pylint_django \
-    --django-settings-module=main.settings \
-    --fail-under=8.0
-```
-
-**Tests** — pytest. Пиши тесты для новой функциональности.
-
-Запусти локально:
-```bash
-pytest
-```
-
-**Docs** — Sphinx собирается на ветках `dev` и `master`. Если добавляешь новые модули — обнови docstring'и.
-
-## Настройка окружения для разработки
+Create a focused branch from the latest `master`:
 
 ```bash
-git clone <url>
-cd ep-files
-
-cp .env.example .env
-
-# Через Docker
-docker-compose up --build
-
-# Или локально
-python -m venv venv
-venv\Scripts\activate
-pip install -r requirements.txt
-pip install pylint pylint-django pytest pytest-django
-python manage.py migrate
-python manage.py runserver
+git checkout master
+git pull --ff-only origin master
+git checkout -b feature/short-description
 ```
 
-## Merge Request
+Use `fix/`, `docs/`, `refactor/`, or `test/` when another prefix describes the work better. Keep unrelated changes in separate branches and pull requests.
 
-- Название MR должно описывать что сделано, а не как
-- Закрывай issue через описание: `Closes #123`
-- MR без прохождения пайплайна не принимается
+## Change Scope
 
+- Follow existing React, Material UI, and Worker patterns.
+- Keep the Worker compatible with Cloudflare Web Platform APIs.
+- Do not introduce a second API or state-management layer without a concrete need.
+- Preserve same-origin `/api` behavior and cookie credentials.
+- Keep D1 metadata and R2 object lifecycle changes consistent.
+- Add a migration under `frontend/drizzle/` for hosted schema changes.
+- Do not add secrets or physical cloud-resource credentials to the repository.
+- Treat root Django files as legacy unless the change explicitly targets that implementation.
+
+## Verification
+
+Run before opening a pull request:
+
+```bash
+cd frontend
+npm run lint
+npm run sites:build
+```
+
+For UI changes, verify:
+
+- desktop and mobile widths;
+- light and dark themes;
+- loading, empty, success, and error states;
+- long file names and translated text;
+- keyboard focus and button labels.
+
+For API changes, verify:
+
+- unauthenticated requests;
+- owner and shared-user permissions;
+- read-only and read/write access;
+- validation failures;
+- D1 and R2 cleanup after deletion.
+
+The root pytest suite covers the legacy Django implementation and should be run when modifying `main/`, `ep_files_app/`, or root Python code.
+
+## Commit Messages
+
+Use concise Conventional Commit prefixes:
+
+| Prefix | Use |
+| --- | --- |
+| `feat:` | New behavior |
+| `fix:` | Bug fix |
+| `docs:` | Documentation only |
+| `perf:` | Performance improvement |
+| `refactor:` | Internal change without intended behavior change |
+| `test:` | Test additions or corrections |
+| `chore:` | Tooling, dependencies, or repository maintenance |
+
+Examples:
+
+```text
+feat: add expiring folder links
+fix: keep upload actions pinned to viewport
+docs: document Worker API endpoints
+```
+
+## Pull Requests
+
+A pull request should include:
+
+- a short description of the user-visible result;
+- implementation notes for non-obvious tradeoffs;
+- verification commands and results;
+- screenshots for visual changes;
+- API request examples for contract changes;
+- migration and rollback notes for schema changes.
+
+Avoid committing generated `dist/`, local `.wrangler/` state, temporary uploads, cookies, or test-account data.
+
+## Documentation
+
+Update documentation in the same pull request when changing commands, routes, API contracts, limits, bindings, permissions, or deployment behavior.
+
+Start with:
+
+- [Project README](./README.md)
+- [Documentation index](./docs/README.md)
+- [Architecture](./docs/ARCHITECTURE.md)
+- [API reference](./docs/API.md)
+- [Security policy](./SECURITY.md)
+
+## Security
+
+Do not include exploit details for an unpatched vulnerability in a public issue or pull request. Follow the private reporting process in [SECURITY.md](./SECURITY.md).

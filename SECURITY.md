@@ -1,225 +1,113 @@
-# 🔒 Безопасность проекта EP-Files
+# Security Policy
 
-## Реализованные меры безопасности
+## Supported Implementation
 
-### 1. Аутентификация и авторизация
+Security reports for the live EP Files application should be evaluated against the current Worker implementation under `frontend/`.
 
-#### JWT Токены
-- Access Token: живет 60 минут
-- Refresh Token: живет 7 дней
-- Ротация токенов при обновлении
-- Blacklist для использованных токенов
+The root Django project is retained as a legacy implementation and has a different authentication, storage, and deployment model.
 
-#### Права доступа
-- Только владелец может скачивать/удалять свои файлы
-- Проверка прав на каждый запрос
-- Кастомные permission классы
+## Reporting a Vulnerability
 
-### 2. Валидация файлов
+Do not publish an unpatched vulnerability in a public issue. Use a private GitHub security advisory for the repository when available and include:
 
-#### Проверка расширений
-Запрещены исполняемые файлы:
-- .exe, .bat, .cmd, .com, .pif, .scr
-- .vbs, .js, .jar, .msi, .app
-- .sh, .bash, .ps1, .deb, .rpm
+- the affected URL or API endpoint;
+- the account role and resource ownership involved;
+- exact reproduction steps;
+- the expected and observed behavior;
+- the practical impact;
+- a minimal proof of concept without unrelated personal data.
 
-#### Проверка MIME типов
-Разрешены только:
-- Документы (PDF, Word, Excel, PowerPoint)
-- Изображения (JPEG, PNG, GIF, WebP, SVG)
-- Архивы (ZIP, RAR, 7z, GZIP)
-- Текстовые файлы (TXT, CSV, JSON, XML)
-- Медиа (MP4, MP3, WAV)
+Allow reasonable time for validation and remediation before public disclosure.
 
-#### Проверка размера
-- Максимальный размер файла: 100 MB
-- Лимит хранилища на пользователя: 100 MB
-- Проверка на клиенте и сервере
+## Current Controls
 
-#### Санитизация имен файлов
-- Удаление опасных символов
-- Защита от path traversal атак
-- Ограничение длины имени (255 символов)
+### Authentication and sessions
 
-### 3. Защита от атак
+- Passwords are derived with PBKDF2-HMAC-SHA-256 and a unique random salt.
+- Session tokens are cryptographically random.
+- Only the SHA-256 hash of a session token is stored in D1.
+- The browser session cookie is `Secure`, `HttpOnly`, `SameSite=Lax`, and scoped to `/`.
+- Sessions expire after seven days.
+- Logging out deletes the active session.
+- Blocking a user deletes all of that user's sessions.
+- Account deletion removes owned file objects and metadata.
 
-#### Rate Limiting
-- Анонимные пользователи: 100 запросов/час
-- Авторизованные: 1000 запросов/час
-- Кастомный middleware для DDoS защиты
+### Authorization
 
-#### Security Headers
-- X-Content-Type-Options: nosniff
-- X-Frame-Options: DENY
-- X-XSS-Protection: 1; mode=block
-- Content-Security-Policy
-- Referrer-Policy
+- Every private file and folder operation resolves the authenticated user and resource permission.
+- Ownership implies full access.
+- Shared grants are limited to `read` and `read_write`.
+- Folder inheritance is evaluated through the folder hierarchy.
+- Only owners can delete resources, manage grants, and create public links.
+- Administrator endpoints require a staff or superuser account.
+- Worker preview-cache lookup occurs only after authorization succeeds.
 
-#### CORS
-- Разрешены только localhost домены
-- Credentials: true
-- Защита от CSRF атак
+### File handling
 
-### 4. Логирование
+- The maximum upload size is 100 MB per file.
+- Uploads are checked against the user's remaining storage quota.
+- The declared upload size must match the size persisted by R2.
+- File names are stripped of path components, unsafe characters are replaced, and length is limited to 255 characters.
+- Common executable and script extensions are blocked.
+- R2 object keys are generated server-side from the user ID and a random UUID.
+- User-provided file names are never used as R2 paths.
+- Text editing is limited to an allowlist and a maximum size of 2 MB.
+- Avatar uploads accept only JPEG, PNG, WebP, and GIF up to 2 MB.
 
-#### Отслеживаемые события
-- Загрузка файлов
-- Скачивание файлов
-- Удаление файлов
-- Попытки несанкционированного доступа
-- Превышение rate limit
+### Public access
 
-#### Формат логов
-```
-INFO 2026-04-18 15:30:00 views File uploaded: document.pdf by user@example.com
-WARNING 2026-04-18 15:31:00 views Unauthorized download attempt: file 123 by hacker@evil.com
-```
+- Public URLs use random tokens rather than sequential IDs.
+- Public links can have server-enforced expiration timestamps.
+- Disabling a link removes its token and expiration metadata.
+- Public folder access is scoped to the selected folder.
+- Public and shared files can be reported for administrator review.
 
-### 5. Защита данных
+### Data deletion
 
-#### Пароли
-- Хеширование с помощью Django hashers
-- Минимальная длина: 6 символов
-- Валидация при регистрации
+- Normal deletion is reversible and retains the R2 object until trash is cleared.
+- Permanent deletion removes the R2 object and D1 metadata.
+- Deleting an account or all user files removes associated R2 objects first.
 
-#### База данных
-- SQLite для разработки
-- Кастомная модель User
-- Связь файлов с владельцами (ForeignKey)
+## Known Limitations
 
-### 6. Изоляция пользователей
+The current application does not claim to provide:
 
-#### Принцип наименьших привилегий
-- Пользователь видит только свои файлы
-- Нет доступа к файлам других пользователей
-- Проверка owner на каждый запрос
+- malware or antivirus scanning;
+- content disarm and reconstruction;
+- multi-factor authentication;
+- per-account or per-IP API rate limiting;
+- end-to-end encryption;
+- customer-managed encryption keys;
+- audit-log immutability;
+- automated abuse classification.
 
-#### API Endpoints с защитой
-```
-GET /api/files/ - только свои файлы
-POST /api/upload/ - требует авторизации
-DELETE /api/files/<id>/ - только владелец
-GET /api/download/<id>/ - только владелец
-```
+These limitations matter for public or multi-tenant deployments. Add controls at the edge and storage layers before using EP Files for untrusted high-volume uploads or sensitive regulated data.
 
-## Известные ограничения
+The first account registered in a completely empty database becomes an administrator. Provision the initial account immediately and protect its credentials.
 
-### Для разработки (НЕ для продакшена!)
+## Security Review Checklist
 
-1. **DEBUG = True** - отключить в продакшене
-2. **SECRET_KEY** - изменить на случайный
-3. **HTTPS** - включить SSL редирект
-4. **База данных** - использовать PostgreSQL
-5. **Rate limiting** - использовать Redis
-6. **Файловое хранилище** - использовать S3/MinIO
+Before a production release:
 
-## Рекомендации для продакшена
+- [ ] Run `npm run lint` and `npm run sites:build` from `frontend/`.
+- [ ] Test expired, missing, and blocked sessions.
+- [ ] Test owner, read-only, read/write, and unauthorized resource access.
+- [ ] Confirm public-link expiration and disable behavior.
+- [ ] Confirm blocked extensions and file-size limits on the Worker, not only in the UI.
+- [ ] Confirm permanent deletion removes the R2 object.
+- [ ] Review new D1 queries for ownership and permission constraints.
+- [ ] Review new caches to ensure authorization occurs before lookup.
+- [ ] Remove disposable test accounts and uploaded objects.
+- [ ] Review dependency advisories for production packages.
 
-### 1. Настройки Django
-```python
-DEBUG = False
-SECRET_KEY = os.environ.get('SECRET_KEY')
-ALLOWED_HOSTS = ['yourdomain.com']
-SECURE_SSL_REDIRECT = True
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
-SECURE_HSTS_SECONDS = 31536000
-```
+## Dependency Updates
 
-### 2. База данных
-```python
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('DB_NAME'),
-        'USER': os.environ.get('DB_USER'),
-        'PASSWORD': os.environ.get('DB_PASSWORD'),
-        'HOST': os.environ.get('DB_HOST'),
-        'PORT': '5432',
-    }
-}
-```
-
-### 3. Файловое хранилище
-```python
-# Использовать S3 или MinIO
-DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
-AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
-AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME')
-```
-
-### 4. Переменные окружения
-Создать `.env` файл:
-```
-SECRET_KEY=your-super-secret-key-here
-DB_NAME=ep_files_db
-DB_USER=ep_files_user
-DB_PASSWORD=strong-password-here
-JWT_SECRET_KEY=another-secret-key
-```
-
-### 5. HTTPS
-- Использовать Let's Encrypt для SSL сертификатов
-- Настроить Nginx как reverse proxy
-- Включить HTTP/2
-
-### 6. Мониторинг
-- Sentry для отслеживания ошибок
-- Prometheus + Grafana для метрик
-- ELK Stack для логов
-
-## Проверка безопасности
-
-### Чеклист перед деплоем
-
-- [ ] DEBUG = False
-- [ ] Изменен SECRET_KEY
-- [ ] Настроен HTTPS
-- [ ] Настроена база данных (не SQLite)
-- [ ] Настроено файловое хранилище (не локальное)
-- [ ] Включены все security headers
-- [ ] Настроен rate limiting с Redis
-- [ ] Настроено логирование
-- [ ] Настроен мониторинг
-- [ ] Проведен security audit
-- [ ] Настроены бэкапы
-
-### Инструменты для проверки
-
-1. **OWASP ZAP** - сканирование уязвимостей
-2. **Bandit** - анализ Python кода
-3. **Safety** - проверка зависимостей
-4. **Django Check** - встроенная проверка
+Review JavaScript dependencies with:
 
 ```bash
-# Проверка Django
-python manage.py check --deploy
-
-# Проверка зависимостей
-pip install safety
-safety check
-
-# Анализ кода
-pip install bandit
-bandit -r ep_files_app/
+cd frontend
+npm outdated
+npm audit
 ```
 
-## Контакты
-
-При обнаружении уязвимостей:
-- Не публикуйте информацию публично
-- Сообщите разработчикам напрямую
-- Дайте время на исправление (90 дней)
-
-## Обновления безопасности
-
-Регулярно обновляйте зависимости:
-```bash
-pip list --outdated
-pip install --upgrade django djangorestframework
-```
-
-## Лицензия
-
-Этот документ является частью проекта EP-Files и распространяется под той же лицензией.
+Do not apply major-version upgrades automatically. Build and test each upgrade against upload streaming, Worker compatibility, D1, and R2.
