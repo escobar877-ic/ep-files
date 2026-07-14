@@ -77,7 +77,7 @@ function FilesHeader({ navigate }) {
     <Box sx={{ minHeight: 86, backgroundColor: (theme) => theme.ep.header, color: '#f8f7f2', borderBottom: '1px solid', borderColor: (theme) => theme.ep.headerLine, position: 'sticky', top: 0, zIndex: 1000 }}>
       <AppHeaderGrid>
         <Button color="inherit" onClick={() => navigate('/file-manager')} startIcon={<Folder />} sx={{ justifySelf: 'start', px: 0 }}>Файлы</Button>
-        <BrandWordmark inverse compact />
+        <BrandWordmark inverse />
         <Typography variant="overline" sx={{ color: '#f8f7f2', justifySelf: 'end', display: { xs: 'none', sm: 'block' } }}>PROFILE</Typography>
       </AppHeaderGrid>
     </Box>

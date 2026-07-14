@@ -86,7 +86,7 @@ function TrashHeader({ user, navigate }) {
     <Box sx={{ minHeight: 86, backgroundColor: (theme) => theme.ep.header, color: '#f8f7f2', borderBottom: '1px solid', borderColor: (theme) => theme.ep.headerLine, position: 'sticky', top: 0, zIndex: 1000 }}>
       <AppHeaderGrid>
         <Button color="inherit" onClick={() => navigate('/file-manager')} startIcon={<ArrowBack />} sx={{ justifySelf: 'start', px: 0 }}>Файлы</Button>
-        <BrandWordmark inverse compact />
+        <BrandWordmark inverse />
         <HeaderProfileButton user={user} onClick={() => navigate('/files')} sx={{ ...headerButtonSx, justifySelf: 'end', color: '#f8f7f2', borderColor: 'rgba(248,247,242,0.55)', minWidth: { xs: 42, sm: 170 }, '&:hover': { backgroundColor: 'rgba(248,247,242,0.1)', borderColor: '#f8f7f2' } }} />
       </AppHeaderGrid>
     </Box>

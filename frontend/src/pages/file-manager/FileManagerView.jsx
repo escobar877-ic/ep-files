@@ -76,7 +76,7 @@ function FileManagerHeader({ user, searchQuery, setSearchQuery, navigate }) {
       <Box sx={{ borderBottom: '1px solid', borderColor: (theme) => theme.ep.headerLine }}>
         <AppHeaderGrid>
           <Button component={RouterLink} to="/" color="inherit" startIcon={<Home />} sx={{ justifySelf: 'start', px: 0 }}>Главная</Button>
-          <BrandWordmark inverse compact />
+          <BrandWordmark inverse />
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, justifySelf: 'end' }}>
             <Button color="inherit" onClick={() => navigate('/trash')} startIcon={<RestoreFromTrash />} sx={{ ...headerButtonSx, minWidth: { xs: 42, sm: 130 }, px: { xs: 0.5, sm: 1.5 }, '& .MuiButton-startIcon': { display: { xs: 'none', sm: 'inherit' } } }}>Корзина</Button>
             <Tooltip title={nextThemeLabel}>

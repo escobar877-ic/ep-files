@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Alert, Box, Button, Chip, CircularProgress, Container, Grid, InputAdornment, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Tooltip, Typography } from '@mui/material';
 import { ArrowBack, Block, CheckCircleOutline, DeleteOutline, Download, LinkOff, Refresh, Save, Verified } from '@mui/icons-material';
 import api from '../api/axios';
+import AppHeaderGrid from '../components/AppHeaderGrid';
 import BrandWordmark from '../components/BrandWordmark';
 import { useAuth } from '../context/authContextValue';
 
@@ -246,12 +247,14 @@ export default function Admin() {
   if (loading) return <Box className="ep-page" sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: (theme) => theme.ep.pageGradient }}><CircularProgress /></Box>;
   return (
     <Box className="ep-page" sx={{ minHeight: '100vh', backgroundColor: (theme) => theme.ep.header }}>
-      <Box sx={{ minHeight: 76, px: { xs: 1.5, sm: 3 }, color: '#f8f7f2', display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', borderBottom: '1px solid', borderColor: (theme) => theme.ep.headerLine }}>
-        <Button color="inherit" startIcon={<ArrowBack />} onClick={() => navigate('/files')} sx={{ justifySelf: 'start', px: 0 }}>Профиль</Button>
-        <BrandWordmark inverse compact />
-        <Typography variant="overline" sx={{ color: '#f8f7f2', justifySelf: 'end', display: { xs: 'none', sm: 'block' } }}>ADMIN CONTROL</Typography>
+      <Box sx={{ minHeight: 86, color: '#f8f7f2', borderBottom: '1px solid', borderColor: (theme) => theme.ep.headerLine }}>
+        <AppHeaderGrid>
+          <Button color="inherit" startIcon={<ArrowBack />} onClick={() => navigate('/files')} sx={{ justifySelf: 'start', px: 0 }}>Профиль</Button>
+          <BrandWordmark inverse />
+          <Typography variant="overline" sx={{ color: '#f8f7f2', justifySelf: 'end', display: { xs: 'none', sm: 'block' } }}>ADMIN CONTROL</Typography>
+        </AppHeaderGrid>
       </Box>
-    <Container className="ep-stagger" maxWidth="xl" sx={{ minHeight: 'calc(100vh - 76px)', py: 4, backgroundColor: 'background.default', borderLeft: '1px solid', borderRight: '1px solid', borderColor: 'divider' }}>
+    <Container className="ep-stagger" maxWidth="xl" sx={{ minHeight: 'calc(100vh - 86px)', py: 4, backgroundColor: 'background.default', borderLeft: '1px solid', borderRight: '1px solid', borderColor: 'divider' }}>
       <Alert severity="warning" sx={{ mb: 3 }}>РЕЖИМ АДМИНИСТРАТОРА СИСТЕМЫ - будьте аккуратны с деструктивными действиями.</Alert>
       <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 2, mb: 1 }}>
         <Typography className="ep-display" sx={{ fontSize: { xs: '2.8rem', md: '5rem' }, lineHeight: 0.88 }}>АДМИН-ПАНЕЛЬ</Typography>

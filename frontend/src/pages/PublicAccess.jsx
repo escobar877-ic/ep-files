@@ -212,8 +212,8 @@ function PublicFolderPage({ token }) {
 function PublicShell({ title, ownerEmail, error, children }) {
   return (
     <Box className="ep-page" sx={{ minHeight: '100vh', backgroundColor: '#0000f2', color: 'text.primary' }}>
-      <Box sx={{ minHeight: 76, display: 'grid', placeItems: 'center', borderBottom: '1px solid rgba(248,247,242,0.42)' }}><BrandWordmark inverse compact /></Box>
-      <Container maxWidth="lg" sx={{ py: { xs: 2, md: 5 }, minHeight: 'calc(100vh - 76px)', backgroundColor: 'background.default', borderLeft: '1px solid', borderRight: '1px solid', borderColor: 'divider' }}>
+      <Box sx={{ minHeight: 86, display: 'grid', placeItems: 'center', borderBottom: '1px solid rgba(248,247,242,0.42)' }}><BrandWordmark inverse /></Box>
+      <Container maxWidth="lg" sx={{ py: { xs: 2, md: 5 }, minHeight: 'calc(100vh - 86px)', backgroundColor: 'background.default', borderLeft: '1px solid', borderRight: '1px solid', borderColor: 'divider' }}>
         <Paper className="ep-scale-in" elevation={0} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 2, border: '1px solid', borderColor: 'divider', backgroundColor: (theme) => theme.ep.panel, boxShadow: (theme) => theme.ep.shadow }}>
           <Box sx={{ display: 'flex', alignItems: { xs: 'stretch', sm: 'flex-start' }, justifyContent: 'space-between', flexDirection: { xs: 'column', sm: 'row' }, gap: 2, mb: 3 }}>
             <Box sx={{ minWidth: 0 }}>
