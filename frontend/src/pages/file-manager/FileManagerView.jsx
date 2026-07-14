@@ -19,6 +19,7 @@ import {
   Menu,
   MenuItem,
   Paper,
+  Portal,
   TextField,
   Tooltip,
   Typography,
@@ -399,7 +400,9 @@ export default function FileManagerView(props) {
         <BreadcrumbBar currentFolderId={currentFolderId} breadcrumbs={breadcrumbs} viewMode={viewMode} setViewMode={setViewMode} onBack={handlers.back} onHome={handlers.home} onBreadcrumbClick={handlers.breadcrumbClick} />
         <ContentArea loading={loading} sortedItems={sortedItems} locationName={locationName} listProps={handlers.listProps} />
       </Container>
-      <CreateFab tasks={tasks.tasks} anchorEl={dialogs.anchorEl} onCreateClick={dialogs.openCreateMenu} />
+      <Portal>
+        <CreateFab tasks={tasks.tasks} anchorEl={dialogs.anchorEl} onCreateClick={dialogs.openCreateMenu} />
+      </Portal>
       <CreateMenu anchorEl={dialogs.anchorEl} onClose={dialogs.closeCreateMenu} onCreateFolder={dialogs.startCreateFolder} onUpload={dialogs.startManualUpload} />
       <NameDialog open={dialogs.createFolderOpen} title="Создать папку" label="Название папки" value={dialogs.newFolderName} setValue={dialogs.setNewFolderName} onClose={dialogs.closeCreateFolder} onSubmit={dialogs.submitCreateFolder} submitLabel="Создать" disabled={!dialogs.newFolderName.trim()} />
       <NameDialog open={dialogs.renameDialogOpen} title={`Переименовать ${dialogs.selectedItem?.type === 'folder' ? 'папку' : 'файл'}`} label="Новое название" value={dialogs.newName} setValue={dialogs.setNewName} onClose={dialogs.closeRename} onSubmit={dialogs.submitRename} submitLabel="Переименовать" disabled={!dialogs.newName.trim() || dialogs.newName.trim() === dialogs.selectedItem?.name} />
@@ -419,8 +422,10 @@ export default function FileManagerView(props) {
       <ReportDialog open={dialogs.reportDialogOpen} file={dialogs.reportFile} reason={dialogs.reportReason} setReason={dialogs.setReportReason} message={dialogs.reportMessage} setMessage={dialogs.setReportMessage} onClose={dialogs.closeReport} onSubmit={dialogs.submitReport} />
       <AccessControlDialog open={dialogs.accessDialogOpen} item={dialogs.selectedItem} onClose={dialogs.closeAccess} onChanged={dialogs.onAccessChanged} />
       <ItemMenu anchorEl={dialogs.menuAnchor} anchorPosition={dialogs.menuAnchorPosition} selectedItem={dialogs.selectedItem} currentUserEmail={user?.email} canEdit={handlers.canEdit} onClose={dialogs.closeItemMenu} actions={dialogs.itemMenuActions} />
-      <TaskWidget tasks={tasks.tasks} isMinimized={tasks.isWidgetMinimized} setIsMinimized={tasks.setIsWidgetMinimized} clearTasks={() => tasks.setTasks([])} />
-      <GlobalDropOverlay active={globalDropActive} locationName={locationName} />
+      <Portal>
+        <TaskWidget tasks={tasks.tasks} isMinimized={tasks.isWidgetMinimized} setIsMinimized={tasks.setIsWidgetMinimized} clearTasks={() => tasks.setTasks([])} />
+        <GlobalDropOverlay active={globalDropActive} locationName={locationName} />
+      </Portal>
     </Box>
   );
 }
